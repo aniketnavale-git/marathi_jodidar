@@ -104,8 +104,8 @@ export const OtpScreen = ({ route, navigation }: any) => {
   const isOtpComplete = otp.every(digit => digit !== '');
 
   const handleVerify = () => {
-    // Unconditionally login for demo per request to not disable the button
-    login();
+    // Navigate to registration flow and remove OTP from stack
+    navigation.replace('Registration');
   };
 
   return (

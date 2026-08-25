@@ -6,6 +6,7 @@ import { MatchesScreen } from '../screens/MatchesScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { OtpScreen } from '../screens/OtpScreen';
 import { RegistrationScreen } from '../screens/RegistrationScreen';
+import { RegistrationStep2Screen } from '../screens/RegistrationStep2Screen';
 import { SplashScreen } from '../screens/SplashScreen';
 import { useTheme, IconButton } from 'react-native-paper';
 import { useAuth } from '../context/AuthContext';
@@ -36,9 +37,10 @@ export const AppNavigator = () => {
       {!isLoggedIn ? (
         // Auth Stack
         <Stack.Group screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Registration" component={RegistrationScreen} />
+          <Stack.Screen name="RegistrationStep2" component={RegistrationStep2Screen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Otp" component={OtpScreen} />
-          <Stack.Screen name="Registration" component={RegistrationScreen} />
         </Stack.Group>
       ) : (
         // Main App Stack

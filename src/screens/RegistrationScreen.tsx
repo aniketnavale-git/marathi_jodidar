@@ -1,77 +1,315 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Image } from 'react-native';
-import { TextInput, Button, useTheme, Title, Text } from 'react-native-paper';
-import { useAuth } from '../context/AuthContext';
+import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { TextInput, Button, Text, Appbar, SegmentedButtons, Portal, Dialog, RadioButton, Switch } from 'react-native-paper';
+import { StatusBar } from 'expo-status-bar';
+
+const primaryColor = '#901c60';
+const accentColor = '#4caf50'; // Vibrant Green for progress
+
+// Helper for actual dropdowns (City, Religion)
+const DropdownInput = ({ label, value, onPress, textStyle }: { label: string, value?: string, onPress?: () => void, textStyle?: any }) => (
+  <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
+    <View pointerEvents="none">
+      <TextInput
+        label={label}
+        value={value}
+        mode="outlined"
+        style={[styles.input, textStyle]}
+        outlineStyle={styles.inputOutline}
+        right={<TextInput.Icon icon="chevron-down" color="#888" />}
+        editable={false}
+        theme={{ colors: { primary: primaryColor } }}
+      />
+    </View>
+  </TouchableOpacity>
+);
 
 export const RegistrationScreen = ({ navigation }: any) => {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const theme = useTheme();
-  const { login } = useAuth();
+  const [gender, setGender] = useState('');
+  const [maritalStatus, setMaritalStatus] = useState('');
+  const [maritalStatusVisible, setMaritalStatusVisible] = useState(false);
+  
+  const [dobDay, setDobDay] = useState('');
+  const [dobMonth, setDobMonth] = useState('');
+  const [dobYear, setDobYear] = useState('');
+  const [dobDayVisible, setDobDayVisible] = useState(false);
+  const [dobMonthVisible, setDobMonthVisible] = useState(false);
+  const [dobYearVisible, setDobYearVisible] = useState(false);
+
+  const [children, setChildren] = useState('');
+  const [childrenVisible, setChildrenVisible] = useState(false);
+  const [childrenLivingWithMe, setChildrenLivingWithMe] = useState('');
+  const [childrenLivingVisible, setChildrenLivingVisible] = useState(false);
+
+  const maritalOptions = [
+    { label: 'Never Married', value: 'never_married' },
+    { label: 'Divorced', value: 'divorced' },
+    { label: 'Widowed', value: 'widowed' },
+    { label: 'Separated', value: 'separated' }
+  ];
+
+  const childrenOptions = [
+    { label: 'No children', value: 'none' },
+    { label: '1', value: '1' },
+    { label: '2', value: '2' },
+    { label: '3+', value: '3+' }
+  ];
+
+  const livingOptions = [
+    { label: 'Yes', value: 'yes' },
+    { label: 'No', value: 'no' }
+  ];
+
+  const dayOptions = Array.from({ length: 31 }, (_, i) => ({ label: `${i + 1}`, value: `${(i + 1).toString().padStart(2, '0')}` }));
+  const monthOptions = [
+    { label: 'Jan', value: '01' }, { label: 'Feb', value: '02' }, { label: 'Mar', value: '03' },
+    { label: 'Apr', value: '04' }, { label: 'May', value: '05' }, { label: 'Jun', value: '06' },
+    { label: 'Jul', value: '07' }, { label: 'Aug', value: '08' }, { label: 'Sep', value: '09' },
+    { label: 'Oct', value: '10' }, { label: 'Nov', value: '11' }, { label: 'Dec', value: '12' }
+  ];
+  
+  const minAge = gender === 'male' ? 21 : 18;
+  const maxAge = gender === 'male' ? 65 : 60; // You can easily change these max age limits!
+  
+  const currentYear = new Date().getFullYear();
+  const totalYears = maxAge - minAge + 1;
+  const yearOptions = Array.from({ length: totalYears }, (_, i) => ({ 
+    label: `${currentYear - minAge - i}`, 
+    value: `${currentYear - minAge - i}` 
+  }));
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={styles.content}>
-        <Image 
-          source={require('../../assets/logo.png')} 
-          style={styles.logo} 
-          resizeMode="contain"
+    <View style={[styles.container, { backgroundColor: '#f4f4f6' }]}>
+      <StatusBar style="light" />
+      <Appbar.Header style={{ backgroundColor: primaryColor, elevation: 0 }}>
+        <Appbar.BackAction color="#ffffff" onPress={() => navigation.goBack()} />
+        <Appbar.Content 
+          title="Create Account" 
+          subtitle="Step 1 of 4"
+          titleStyle={{ color: '#ffffff', fontSize: 18, fontWeight: '600' }} 
+          subtitleStyle={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}
         />
-        <Title style={[styles.title, { color: theme.colors.primary }]}>Create Account</Title>
-        <Text style={styles.subtitle}>Join Marathi Jodidar today</Text>
+      </Appbar.Header>
 
-        <TextInput
-          label="Full Name"
-          value={name}
-          onChangeText={setName}
-          mode="outlined"
-          style={styles.input}
-        />
-        <TextInput
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          mode="outlined"
-          style={styles.input}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <TextInput
-          label="Phone Number"
-          value={phone}
-          onChangeText={setPhone}
-          mode="outlined"
-          style={styles.input}
-          keyboardType="phone-pad"
-        />
-        <TextInput
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          mode="outlined"
-          style={styles.input}
-          secureTextEntry
-        />
-
-        <Button 
-          mode="contained" 
-          onPress={login} 
-          style={styles.button}
-          contentStyle={{ paddingVertical: 8 }}
-        >
-          Register
-        </Button>
-
-        <View style={styles.footer}>
-          <Text>Already have an account? </Text>
-          <Button mode="text" onPress={() => navigation.navigate('Login')} compact>
-            Login
-          </Button>
-        </View>
+      {/* Modern Segmented Progress */}
+      <View style={{ flexDirection: 'row', gap: 6, paddingHorizontal: 20, paddingVertical: 16, backgroundColor: '#f4f4f6' }}>
+        <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: accentColor }} />
+        <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: '#e0e0e0' }} />
+        <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: '#e0e0e0' }} />
+        <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: '#e0e0e0' }} />
       </View>
-    </ScrollView>
+
+      <KeyboardAvoidingView 
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          
+          <View style={styles.card}>
+            
+            <TextInput
+              label="Full Name"
+              value={name}
+              onChangeText={setName}
+              mode="outlined"
+              style={styles.input}
+              outlineStyle={styles.inputOutline}
+              right={<TextInput.Icon icon="account-outline" color={primaryColor} />}
+              theme={{ colors: { primary: primaryColor } }}
+            />
+
+            <Text style={styles.fieldLabel}>Gender</Text>
+            <SegmentedButtons
+              value={gender}
+              onValueChange={setGender}
+              buttons={[
+                { value: 'male', label: 'Male' },
+                { value: 'female', label: 'Female' },
+              ]}
+              style={styles.segmentedGroup}
+              theme={{ colors: { secondaryContainer: '#f0e6ed', onSecondaryContainer: primaryColor } }}
+            />
+
+            <Text style={styles.fieldLabel}>Date of Birth</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
+              <View style={{ flex: 0.3 }}>
+                <DropdownInput 
+                  label="Day" 
+                  value={dobDay}
+                  onPress={() => setDobDayVisible(true)} 
+                  textStyle={{ marginBottom: 0 }}
+                />
+              </View>
+              <View style={{ flex: 0.35 }}>
+                <DropdownInput 
+                  label="Month" 
+                  value={monthOptions.find(o => o.value === dobMonth)?.label || ''}
+                  onPress={() => setDobMonthVisible(true)} 
+                  textStyle={{ marginBottom: 0 }}
+                />
+              </View>
+              <View style={{ flex: 0.3 }}>
+                <DropdownInput 
+                  label="Year" 
+                  value={dobYear}
+                  onPress={() => setDobYearVisible(true)} 
+                  textStyle={{ marginBottom: 0 }}
+                />
+              </View>
+            </View>
+            
+            <DropdownInput 
+              label="Marital Status" 
+              value={maritalOptions.find(o => o.value === maritalStatus)?.label || ''}
+              onPress={() => setMaritalStatusVisible(true)} 
+            />
+
+            {maritalStatus !== '' && maritalStatus !== 'never_married' && (
+              <>
+                <DropdownInput 
+                  label="Children" 
+                  value={childrenOptions.find(o => o.value === children)?.label || ''}
+                  onPress={() => setChildrenVisible(true)}
+                />
+                
+                {children !== '' && children !== 'none' && (
+                  <DropdownInput 
+                    label="Children living with you?" 
+                    value={
+                      childrenLivingWithMe === 'yes' ? 'Children living with me' :
+                      childrenLivingWithMe === 'no' ? 'Children not living with me' : ''
+                    }
+                    onPress={() => setChildrenLivingVisible(true)}
+                  />
+                )}
+              </>
+            )}
+            
+            <Button 
+              mode="contained" 
+              onPress={() => navigation.navigate('RegistrationStep2', {
+                name,
+                gender,
+                dob: `${dobDay}/${dobMonth}/${dobYear}`,
+                maritalStatus,
+                children,
+                childrenLivingWithMe
+              })} 
+              style={[styles.submitButton, { backgroundColor: primaryColor }]}
+              contentStyle={styles.submitButtonContent}
+              labelStyle={styles.submitButtonText}
+            >
+              Next
+            </Button>
+
+          </View>
+
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      <Portal>
+        <Dialog visible={dobDayVisible} onDismiss={() => setDobDayVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
+          <Dialog.Title style={styles.dialogTitle}>Day</Dialog.Title>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+            <ScrollView showsVerticalScrollIndicator={true}>
+              <RadioButton.Group onValueChange={newValue => { setDobDay(newValue); setDobDayVisible(false); }} value={dobDay}>
+                {dayOptions.map(option => (
+                  <RadioButton.Item key={option.value} label={option.label} value={option.value} color={primaryColor} labelStyle={styles.radioLabel} />
+                ))}
+              </RadioButton.Group>
+            </ScrollView>
+          </Dialog.ScrollArea>
+        </Dialog>
+
+        <Dialog visible={dobMonthVisible} onDismiss={() => setDobMonthVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
+          <Dialog.Title style={styles.dialogTitle}>Month</Dialog.Title>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+            <ScrollView showsVerticalScrollIndicator={true}>
+              <RadioButton.Group onValueChange={newValue => { setDobMonth(newValue); setDobMonthVisible(false); }} value={dobMonth}>
+                {monthOptions.map(option => (
+                  <RadioButton.Item key={option.value} label={option.label} value={option.value} color={primaryColor} labelStyle={styles.radioLabel} />
+                ))}
+              </RadioButton.Group>
+            </ScrollView>
+          </Dialog.ScrollArea>
+        </Dialog>
+
+        <Dialog visible={dobYearVisible} onDismiss={() => setDobYearVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
+          <Dialog.Title style={styles.dialogTitle}>Year</Dialog.Title>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+            <ScrollView showsVerticalScrollIndicator={true}>
+              <RadioButton.Group onValueChange={newValue => { setDobYear(newValue); setDobYearVisible(false); }} value={dobYear}>
+                {yearOptions.map(option => (
+                  <RadioButton.Item key={option.value} label={option.label} value={option.value} color={primaryColor} labelStyle={styles.radioLabel} />
+                ))}
+              </RadioButton.Group>
+            </ScrollView>
+          </Dialog.ScrollArea>
+        </Dialog>
+
+        <Dialog visible={maritalStatusVisible} onDismiss={() => setMaritalStatusVisible(false)} style={{ backgroundColor: '#ffffff' }}>
+          <Dialog.Title style={styles.dialogTitle}>Select Marital Status</Dialog.Title>
+          <Dialog.Content>
+            <RadioButton.Group onValueChange={newValue => {
+                setMaritalStatus(newValue);
+                setMaritalStatusVisible(false);
+              }} value={maritalStatus}>
+              {maritalOptions.map(option => (
+                <RadioButton.Item 
+                  key={option.value} 
+                  label={option.label} 
+                  value={option.value} 
+                  color={primaryColor}
+                  labelStyle={styles.radioLabel}
+                />
+              ))}
+            </RadioButton.Group>
+          </Dialog.Content>
+        </Dialog>
+
+        <Dialog visible={childrenVisible} onDismiss={() => setChildrenVisible(false)} style={{ backgroundColor: '#ffffff' }}>
+          <Dialog.Title style={styles.dialogTitle}>Number of Children</Dialog.Title>
+          <Dialog.Content>
+            <RadioButton.Group onValueChange={newValue => {
+                setChildren(newValue);
+                setChildrenVisible(false);
+              }} value={children}>
+              {childrenOptions.map(option => (
+                <RadioButton.Item 
+                  key={option.value} 
+                  label={option.label} 
+                  value={option.value} 
+                  color={primaryColor}
+                  labelStyle={styles.radioLabel}
+                />
+              ))}
+            </RadioButton.Group>
+          </Dialog.Content>
+        </Dialog>
+
+        <Dialog visible={childrenLivingVisible} onDismiss={() => setChildrenLivingVisible(false)} style={{ backgroundColor: '#ffffff' }}>
+          <Dialog.Title style={styles.dialogTitle}>Children living with you?</Dialog.Title>
+          <Dialog.Content>
+            <RadioButton.Group onValueChange={newValue => {
+                setChildrenLivingWithMe(newValue);
+                setChildrenLivingVisible(false);
+              }} value={childrenLivingWithMe}>
+              {livingOptions.map(option => (
+                <RadioButton.Item 
+                  key={option.value} 
+                  label={option.label} 
+                  value={option.value} 
+                  color={primaryColor}
+                  labelStyle={styles.radioLabel}
+                />
+              ))}
+            </RadioButton.Group>
+          </Dialog.Content>
+        </Dialog>
+      </Portal>
+
+    </View>
   );
 };
 
@@ -79,39 +317,66 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
-    padding: 24,
-    paddingTop: 40,
-    paddingBottom: 60,
+  keyboardView: {
+    flex: 1,
   },
-  logo: {
-    width: 100,
-    height: 100,
-    alignSelf: 'center',
-    marginBottom: 16,
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 40,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e8e8e8',
+    elevation: 2, // subtle shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
     marginBottom: 8,
   },
-  subtitle: {
-    textAlign: 'center',
+  fieldLabel: {
+    fontSize: 13,
     color: '#666',
-    marginBottom: 32,
+    marginBottom: 8,
+    marginTop: 4,
+    marginLeft: 2,
+    fontWeight: '500',
   },
   input: {
+    backgroundColor: '#ffffff',
     marginBottom: 16,
+    height: 56,
   },
-  button: {
-    marginTop: 8,
-    marginBottom: 24,
-    borderRadius: 30,
+  inputOutline: {
+    borderColor: '#d0d0d0',
+    borderRadius: 8,
   },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+  segmentedGroup: {
+    marginBottom: 20,
+  },
+  submitButton: {
+    marginTop: 16,
+    borderRadius: 8,
+    elevation: 3,
+  },
+  submitButtonContent: {
+    height: 56,
+  },
+  submitButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
+  },
+  dialogTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  radioLabel: {
+    fontSize: 16,
+    color: '#333',
   },
 });

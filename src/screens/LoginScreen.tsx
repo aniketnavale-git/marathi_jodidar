@@ -47,9 +47,6 @@ export const LoginScreen = ({ navigation }: any) => {
     }
   };
 
-  // Format for display (e.g., 98765 43210)
-  const displayMobileNumber = mobileNumber.replace(/(\d{5})(\d{1,5})/, '$1 $2').trim();
-
   return (
     <KeyboardAvoidingView 
       style={[styles.container, { backgroundColor: theme.colors.background }]}
@@ -88,9 +85,9 @@ export const LoginScreen = ({ navigation }: any) => {
 
           <TextInput
             label="Mobile Number"
-            value={displayMobileNumber}
+            value={mobileNumber}
             onChangeText={handleMobileNumberChange}
-            maxLength={11} // 10 digits + 1 space
+            maxLength={10} // 10 digits
             mode="outlined"
             style={styles.input}
             outlineStyle={styles.inputOutline}
@@ -112,15 +109,6 @@ export const LoginScreen = ({ navigation }: any) => {
             Continue
           </Button>
         </Animated.View>
-
-        <View style={styles.footer}>
-          <Text style={styles.termsText}>
-            By continuing, you agree to our <Text style={styles.linkText} onPress={() => {}}>Terms and Conditions</Text>
-          </Text>
-          <Text style={styles.supportText}>
-            Need help? <Text style={styles.linkText} onPress={() => {}}>Contact Support</Text>
-          </Text>
-        </View>
 
       </ScrollView>
     </KeyboardAvoidingView>
@@ -186,26 +174,6 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     fontSize: 16,
-    fontWeight: 'bold',
-  },
-  footer: {
-    marginTop: 32,
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  termsText: {
-    color: '#666',
-    fontSize: 12,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  supportText: {
-    color: '#666',
-    fontSize: 13,
-    textAlign: 'center',
-  },
-  linkText: {
-    color: '#874086',
     fontWeight: 'bold',
   },
 });
