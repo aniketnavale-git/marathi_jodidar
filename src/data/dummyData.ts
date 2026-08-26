@@ -7,6 +7,7 @@ export interface Profile {
   education: string;
   profession: string;
   location: string;
+  district?: string;
   bio: string;
   imageUrl: string;
 }
@@ -21,6 +22,7 @@ export const dummyProfiles: Profile[] = [
     education: 'BE Computer',
     profession: 'Software Engineer',
     location: 'Pune',
+    district: 'Pune',
     bio: 'Looking for a well-educated and understanding partner. I enjoy reading and traveling.',
     imageUrl: 'https://images.unsplash.com/photo-1544626154-159cf0591244?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
   },
@@ -33,6 +35,7 @@ export const dummyProfiles: Profile[] = [
     education: 'MBA',
     profession: 'Marketing Manager',
     location: 'Mumbai',
+    district: 'Mumbai Suburban',
     bio: 'Family-oriented person with a modern outlook. Love to cook and play cricket on weekends.',
     imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
   },
@@ -45,6 +48,7 @@ export const dummyProfiles: Profile[] = [
     education: 'M.Com',
     profession: 'Banker',
     location: 'Nashik',
+    district: 'Nashik',
     bio: 'Simple and caring girl. Enjoys classical music and spending time with family.',
     imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
   },
@@ -57,6 +61,7 @@ export const dummyProfiles: Profile[] = [
     education: 'MS',
     profession: 'Data Scientist',
     location: 'Pune',
+    district: 'Pune',
     bio: 'Tech enthusiast who loves hiking. Looking for someone with similar interests.',
     imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
   },
@@ -69,6 +74,7 @@ export const dummyProfiles: Profile[] = [
     education: 'B.Arch',
     profession: 'Architect',
     location: 'Nagpur',
+    district: 'Nagpur',
     bio: 'Creative and independent. Passsionate about design and photography.',
     imageUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80',
   }

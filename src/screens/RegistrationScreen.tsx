@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { TextInput, Button, Text, Appbar, SegmentedButtons, Portal, Dialog, RadioButton, Switch } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 
@@ -7,7 +7,7 @@ const primaryColor = '#901c60';
 const accentColor = '#4caf50'; // Vibrant Green for progress
 
 // Helper for actual dropdowns (City, Religion)
-const DropdownInput = ({ label, value, onPress, textStyle }: { label: string, value?: string, onPress?: () => void, textStyle?: any }) => (
+const DropdownInput = ({ label, value, onPress, textStyle, error }: { label: string, value?: string, onPress?: () => void, textStyle?: any, error?: boolean }) => (
   <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
     <View pointerEvents="none">
       <TextInput
@@ -15,7 +15,7 @@ const DropdownInput = ({ label, value, onPress, textStyle }: { label: string, va
         value={value}
         mode="outlined"
         style={[styles.input, textStyle]}
-        outlineStyle={styles.inputOutline}
+        outlineStyle={[styles.inputOutline, error ? { borderColor: 'red' } : undefined]}
         right={<TextInput.Icon icon="chevron-down" color="#888" />}
         editable={false}
         theme={{ colors: { primary: primaryColor } }}
@@ -42,8 +42,10 @@ export const RegistrationScreen = ({ navigation }: any) => {
   const [childrenLivingWithMe, setChildrenLivingWithMe] = useState('');
   const [childrenLivingVisible, setChildrenLivingVisible] = useState(false);
 
+  const [errors, setErrors] = useState<any>({});
+
   const maritalOptions = [
-    { label: 'Never Married', value: 'never_married' },
+    { label: 'Single', value: 'single' },
     { label: 'Divorced', value: 'divorced' },
     { label: 'Widowed', value: 'widowed' },
     { label: 'Separated', value: 'separated' }
@@ -111,10 +113,11 @@ export const RegistrationScreen = ({ navigation }: any) => {
             <TextInput
               label="Full Name"
               value={name}
-              onChangeText={setName}
+              onChangeText={(t) => { setName(t); setErrors({...errors, name: false}); }}
               mode="outlined"
+              maxLength={30}
               style={styles.input}
-              outlineStyle={styles.inputOutline}
+              outlineStyle={[styles.inputOutline, errors.name ? { borderColor: 'red' } : undefined]}
               right={<TextInput.Icon icon="account-outline" color={primaryColor} />}
               theme={{ colors: { primary: primaryColor } }}
             />
@@ -122,13 +125,13 @@ export const RegistrationScreen = ({ navigation }: any) => {
             <Text style={styles.fieldLabel}>Gender</Text>
             <SegmentedButtons
               value={gender}
-              onValueChange={setGender}
+              onValueChange={(v) => { setGender(v); setErrors({...errors, gender: false}); }}
               buttons={[
                 { value: 'male', label: 'Male' },
                 { value: 'female', label: 'Female' },
               ]}
               style={styles.segmentedGroup}
-              theme={{ colors: { secondaryContainer: '#f0e6ed', onSecondaryContainer: primaryColor } }}
+              theme={{ colors: { secondaryContainer: '#f0e6ed', onSecondaryContainer: primaryColor, outline: errors.gender ? 'red' : undefined } }}
             />
 
             <Text style={styles.fieldLabel}>Date of Birth</Text>
@@ -139,6 +142,7 @@ export const RegistrationScreen = ({ navigation }: any) => {
                   value={dobDay}
                   onPress={() => setDobDayVisible(true)} 
                   textStyle={{ marginBottom: 0 }}
+                  error={errors.dobDay}
                 />
               </View>
               <View style={{ flex: 0.35 }}>
@@ -147,6 +151,7 @@ export const RegistrationScreen = ({ navigation }: any) => {
                   value={monthOptions.find(o => o.value === dobMonth)?.label || ''}
                   onPress={() => setDobMonthVisible(true)} 
                   textStyle={{ marginBottom: 0 }}
+                  error={errors.dobMonth}
                 />
               </View>
               <View style={{ flex: 0.3 }}>
@@ -155,6 +160,7 @@ export const RegistrationScreen = ({ navigation }: any) => {
                   value={dobYear}
                   onPress={() => setDobYearVisible(true)} 
                   textStyle={{ marginBottom: 0 }}
+                  error={errors.dobYear}
                 />
               </View>
             </View>
@@ -163,14 +169,21 @@ export const RegistrationScreen = ({ navigation }: any) => {
               label="Marital Status" 
               value={maritalOptions.find(o => o.value === maritalStatus)?.label || ''}
               onPress={() => setMaritalStatusVisible(true)} 
+              error={errors.maritalStatus}
             />
 
-            {maritalStatus !== '' && maritalStatus !== 'never_married' && (
+            {maritalStatus !== '' && maritalStatus !== 'single' && (
               <>
                 <DropdownInput 
                   label="Children" 
-                  value={childrenOptions.find(o => o.value === children)?.label || ''}
+                  value={
+                    children === 'none' ? 'No children' :
+                    children === '1' ? 'I have 1 child' :
+                    children === '2' ? 'I have 2 children' :
+                    children === '3+' ? 'I have 3+ children' : ''
+                  }
                   onPress={() => setChildrenVisible(true)}
+                  error={errors.children}
                 />
                 
                 {children !== '' && children !== 'none' && (
@@ -181,6 +194,7 @@ export const RegistrationScreen = ({ navigation }: any) => {
                       childrenLivingWithMe === 'no' ? 'Children not living with me' : ''
                     }
                     onPress={() => setChildrenLivingVisible(true)}
+                    error={errors.childrenLivingWithMe}
                   />
                 )}
               </>
@@ -188,14 +202,55 @@ export const RegistrationScreen = ({ navigation }: any) => {
             
             <Button 
               mode="contained" 
-              onPress={() => navigation.navigate('RegistrationStep2', {
-                name,
-                gender,
-                dob: `${dobDay}/${dobMonth}/${dobYear}`,
-                maritalStatus,
-                children,
-                childrenLivingWithMe
-              })} 
+              onPress={() => {
+                let newErrors: any = {};
+                if (name.trim().length < 2) newErrors.name = true;
+                if (!gender) newErrors.gender = true;
+                if (!dobDay) newErrors.dobDay = true;
+                if (!dobMonth) newErrors.dobMonth = true;
+                if (!dobYear) newErrors.dobYear = true;
+                if (!maritalStatus) newErrors.maritalStatus = true;
+                if (maritalStatus !== 'single') {
+                  if (!children) newErrors.children = true;
+                  if (children !== 'none' && !childrenLivingWithMe) newErrors.childrenLivingWithMe = true;
+                }
+
+                setErrors(newErrors);
+
+                if (newErrors.name) {
+                  Alert.alert('Full Name', 'Please enter your Full Name.');
+                  return;
+                }
+                if (newErrors.gender) {
+                  Alert.alert('Gender', 'Please select your Gender.');
+                  return;
+                }
+                if (newErrors.dobDay || newErrors.dobMonth || newErrors.dobYear) {
+                  Alert.alert('Date of Birth', 'Please complete your Date of Birth.');
+                  return;
+                }
+                if (newErrors.maritalStatus) {
+                  Alert.alert('Marital Status', 'Please select your Marital Status.');
+                  return;
+                }
+                if (newErrors.children) {
+                  Alert.alert('Children Information', 'Please select the Number of Children.');
+                  return;
+                }
+                if (newErrors.childrenLivingWithMe) {
+                  Alert.alert('Living Arrangement', 'Please specify if Children are living with you.');
+                  return;
+                }
+                
+                navigation.navigate('RegistrationStep2', {
+                  name,
+                  gender,
+                  dob: `${dobDay}/${dobMonth}/${dobYear}`,
+                  maritalStatus,
+                  children,
+                  childrenLivingWithMe
+                });
+              }} 
               style={[styles.submitButton, { backgroundColor: primaryColor }]}
               contentStyle={styles.submitButtonContent}
               labelStyle={styles.submitButtonText}
@@ -213,7 +268,7 @@ export const RegistrationScreen = ({ navigation }: any) => {
           <Dialog.Title style={styles.dialogTitle}>Day</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
-              <RadioButton.Group onValueChange={newValue => { setDobDay(newValue); setDobDayVisible(false); }} value={dobDay}>
+              <RadioButton.Group onValueChange={newValue => { setDobDay(newValue); setDobDayVisible(false); setErrors({...errors, dobDay: false}); }} value={dobDay}>
                 {dayOptions.map(option => (
                   <RadioButton.Item key={option.value} label={option.label} value={option.value} color={primaryColor} labelStyle={styles.radioLabel} />
                 ))}
@@ -226,7 +281,7 @@ export const RegistrationScreen = ({ navigation }: any) => {
           <Dialog.Title style={styles.dialogTitle}>Month</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
-              <RadioButton.Group onValueChange={newValue => { setDobMonth(newValue); setDobMonthVisible(false); }} value={dobMonth}>
+              <RadioButton.Group onValueChange={newValue => { setDobMonth(newValue); setDobMonthVisible(false); setErrors({...errors, dobMonth: false}); }} value={dobMonth}>
                 {monthOptions.map(option => (
                   <RadioButton.Item key={option.value} label={option.label} value={option.value} color={primaryColor} labelStyle={styles.radioLabel} />
                 ))}
@@ -239,7 +294,7 @@ export const RegistrationScreen = ({ navigation }: any) => {
           <Dialog.Title style={styles.dialogTitle}>Year</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
-              <RadioButton.Group onValueChange={newValue => { setDobYear(newValue); setDobYearVisible(false); }} value={dobYear}>
+              <RadioButton.Group onValueChange={newValue => { setDobYear(newValue); setDobYearVisible(false); setErrors({...errors, dobYear: false}); }} value={dobYear}>
                 {yearOptions.map(option => (
                   <RadioButton.Item key={option.value} label={option.label} value={option.value} color={primaryColor} labelStyle={styles.radioLabel} />
                 ))}
@@ -254,6 +309,7 @@ export const RegistrationScreen = ({ navigation }: any) => {
             <RadioButton.Group onValueChange={newValue => {
                 setMaritalStatus(newValue);
                 setMaritalStatusVisible(false);
+                setErrors({...errors, maritalStatus: false});
               }} value={maritalStatus}>
               {maritalOptions.map(option => (
                 <RadioButton.Item 
@@ -274,6 +330,7 @@ export const RegistrationScreen = ({ navigation }: any) => {
             <RadioButton.Group onValueChange={newValue => {
                 setChildren(newValue);
                 setChildrenVisible(false);
+                setErrors({...errors, children: false});
               }} value={children}>
               {childrenOptions.map(option => (
                 <RadioButton.Item 
@@ -294,6 +351,7 @@ export const RegistrationScreen = ({ navigation }: any) => {
             <RadioButton.Group onValueChange={newValue => {
                 setChildrenLivingWithMe(newValue);
                 setChildrenLivingVisible(false);
+                setErrors({...errors, childrenLivingWithMe: false});
               }} value={childrenLivingWithMe}>
               {livingOptions.map(option => (
                 <RadioButton.Item 

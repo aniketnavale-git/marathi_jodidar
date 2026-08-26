@@ -24,6 +24,7 @@ export const AppNavigator = () => {
 
   return (
     <Stack.Navigator
+      initialRouteName="RegistrationStep2"
       screenOptions={{
         headerStyle: {
           backgroundColor: theme.colors.primary,
