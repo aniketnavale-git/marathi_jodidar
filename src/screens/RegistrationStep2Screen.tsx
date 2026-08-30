@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Keyboard } from 'react-native';
 import { TextInput, Button, Appbar, Portal, Dialog, RadioButton, Text, SegmentedButtons } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
+import { getAllStates, getDistrictsByState } from '../constants/locations';
 
 const primaryColor = '#901c60';
 const accentColor = '#4caf50'; // Vibrant Green for progress
@@ -33,7 +34,6 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
   const [casteVisible, setCasteVisible] = useState(false);
   const [interCaste, setInterCaste] = useState('');
   const [interCasteVisible, setInterCasteVisible] = useState(false);
-  const [citySelectedFromList, setCitySelectedFromList] = useState(false);
   
   const [height, setHeight] = useState('');
   const [heightVisible, setHeightVisible] = useState(false);
@@ -41,14 +41,16 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
   const [weightVisible, setWeightVisible] = useState(false);
   const [diet, setDiet] = useState('');
   const [dietVisible, setDietVisible] = useState(false);
-  const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');
-  const [cityPredictions, setCityPredictions] = useState<any[]>([]);
+  const [districtVisible, setDistrictVisible] = useState(false);
   const [errors, setErrors] = useState<any>({});
 
-  const scrollRef = useRef<ScrollView>(null);
-  const cityInputY = useRef(0);
-  const activeCitySearch = useRef('');
+
+  
+  const availableDistricts = useMemo(() => {
+    const districts = getDistrictsByState('Maharashtra') || [];
+    return [...districts, 'Other'];
+  }, []);
 
   const heightOptions = [];
   for (let feet = 4; feet <= 7; feet++) {
@@ -118,8 +120,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView 
-          ref={scrollRef}
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 250 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
           keyboardShouldPersistTaps="handled"
         >
           <View style={{ paddingHorizontal: 20, paddingTop: 16 }}>
@@ -147,101 +148,12 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
               error={errors.interCaste}
             />
 
-            <View 
-              style={{ marginBottom: 16, zIndex: 999, elevation: 10 }}
-              onLayout={(e) => { cityInputY.current = e.nativeEvent.layout.y; }}
-            >
-              <TextInput
-                label="City"
-                mode="outlined"
-                placeholder="Search City/District"
-                value={city}
-                onFocus={() => {
-                  setTimeout(() => {
-                    scrollRef.current?.scrollTo({ y: 180, animated: true });
-                  }, 300);
-                }}
-                onChangeText={async (text) => {
-                  activeCitySearch.current = text;
-                  setCity(text);
-                  setCitySelectedFromList(false);
-                  setErrors({...errors, city: false});
-                  if (text.trim().length === 0) {
-                    setCityPredictions([]);
-                    return;
-                  }
-                  
-                  try {
-                    const apiKey = "AIzaSyApx5uFHCsnb2yBZ2kgUuoOuJktVy6nHfo";
-                    const res = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${text}&types=(cities)&components=country:in&key=${apiKey}`);
-                    const json = await res.json();
-                    
-                    // Prevent race condition if user typed or deleted something else while fetching
-                    if (activeCitySearch.current !== text) {
-                      return;
-                    }
-
-                    if (json.status === "OK") {
-                      setCityPredictions(json.predictions.slice(0, 4));
-                      setTimeout(() => {
-                        scrollRef.current?.scrollTo({ y: 180, animated: true });
-                      }, 100);
-                    } else {
-                      setCityPredictions([]);
-                    }
-                  } catch (err) {
-                    console.log(err);
-                  }
-                }}
-                style={[styles.input, { marginBottom: 0 }]}
-                outlineStyle={[styles.inputOutline, errors.city ? { borderColor: 'red' } : undefined]}
-                theme={{ colors: { primary: primaryColor } }}
-                right={<TextInput.Icon icon="map-marker-outline" color={primaryColor} />}
-              />
-              {cityPredictions.length > 0 && (
-                <View style={styles.dropdown}>
-                  <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled showsVerticalScrollIndicator={false}>
-                    {cityPredictions.map((prediction, index) => (
-                      <View key={prediction.place_id}>
-                        <TouchableOpacity
-                          onPress={async () => {
-                            Keyboard.dismiss();
-                            setCity(prediction.description);
-                            setCitySelectedFromList(true);
-                            setCityPredictions([]);
-                            setErrors({...errors, city: false});
-                            
-                            // Fetch district details
-                            try {
-                              const apiKey = "AIzaSyApx5uFHCsnb2yBZ2kgUuoOuJktVy6nHfo";
-                              const res = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${prediction.place_id}&fields=address_components&key=${apiKey}`);
-                              const json = await res.json();
-                              if (json.status === "OK" && json.result.address_components) {
-                                const districtComponent = json.result.address_components.find((c: any) => 
-                                  c.types.includes('administrative_area_level_3') || c.types.includes('administrative_area_level_2')
-                                );
-                                if (districtComponent) {
-                                  setDistrict(districtComponent.long_name);
-                                  setErrors((prev: any) => ({...prev, district: false}));
-                                }
-                              }
-                            } catch (err) {
-                              console.log(err);
-                            }
-                          }}
-                          style={styles.dropdownItem}
-                          activeOpacity={0.6}
-                        >
-                          <Text style={styles.dropdownText}>{prediction.description}</Text>
-                        </TouchableOpacity>
-                        {index < cityPredictions.length - 1 && <View style={{ height: 1, backgroundColor: '#f0f0f0' }} />}
-                      </View>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-
+            <DropdownInput 
+              label="District (Maharashtra)" 
+              value={district}
+              onPress={() => setDistrictVisible(true)} 
+              error={errors.district}
+            />
 
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <View style={{ flex: 0.48 }}>
@@ -276,7 +188,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
                 if (!religion) newErrors.religion = true;
                 if (!caste) newErrors.caste = true;
                 if (!interCaste) newErrors.interCaste = true;
-                if (!city || !citySelectedFromList) newErrors.city = true;
+                if (!district) newErrors.district = true;
                 if (!height) newErrors.height = true;
                 if (!weight) newErrors.weight = true;
                 if (!diet) newErrors.diet = true;
@@ -295,8 +207,8 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
                   Alert.alert('Inter-caste', 'Please select your Inter-caste preference.');
                   return;
                 }
-                if (newErrors.city) {
-                  Alert.alert('City', 'Please search and select your City from the dropdown list.');
+                if (newErrors.district) {
+                  Alert.alert('District', 'Please select your District.');
                   return;
                 }
                 if (newErrors.height) {
@@ -312,15 +224,14 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
                   return;
                 }
 
-                console.log('Registration Data:', { name, gender, dob, maritalStatus, children, childrenLivingWithMe, religion, caste, interCaste, city, district, height, weight, diet });
-                // For now, navigate back to login or home after complete
-                navigation.navigate('Login');
+                // Navigate to Step 3
+                navigation.navigate('RegistrationStep3', { name, gender, dob, maritalStatus, children, childrenLivingWithMe, religion, caste, interCaste, district, height, weight, diet });
               }} 
               style={[styles.submitButton, { backgroundColor: primaryColor }]}
               contentStyle={styles.submitButtonContent}
               labelStyle={styles.submitButtonText}
             >
-              Submit
+              Next
             </Button>
 
           </View>
@@ -449,6 +360,28 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
               <RadioButton.Item label="Eggetarian" value="egg" color={primaryColor} labelStyle={styles.radioLabel} />
             </RadioButton.Group>
           </Dialog.Content>
+        </Dialog>
+        <Dialog visible={districtVisible} onDismiss={() => setDistrictVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
+          <Dialog.Title style={styles.dialogTitle}>Select District</Dialog.Title>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+            <ScrollView showsVerticalScrollIndicator={true}>
+              <RadioButton.Group onValueChange={newValue => {
+                  setDistrict(newValue);
+                  setDistrictVisible(false);
+                  setErrors({...errors, district: false});
+                }} value={district}>
+                {availableDistricts.map((d: string) => (
+                  <RadioButton.Item 
+                    key={d} 
+                    label={d} 
+                    value={d} 
+                    color={primaryColor}
+                    labelStyle={styles.radioLabel}
+                  />
+                ))}
+              </RadioButton.Group>
+            </ScrollView>
+          </Dialog.ScrollArea>
         </Dialog>
       </Portal>
 

@@ -7,6 +7,7 @@ import { LoginScreen } from '../screens/LoginScreen';
 import { OtpScreen } from '../screens/OtpScreen';
 import { RegistrationScreen } from '../screens/RegistrationScreen';
 import { RegistrationStep2Screen } from '../screens/RegistrationStep2Screen';
+import { RegistrationStep3Screen } from '../screens/RegistrationStep3Screen';
 import { SplashScreen } from '../screens/SplashScreen';
 import { useTheme, IconButton } from 'react-native-paper';
 import { useAuth } from '../context/AuthContext';
@@ -24,7 +25,7 @@ export const AppNavigator = () => {
 
   return (
     <Stack.Navigator
-      initialRouteName="RegistrationStep2"
+      initialRouteName="RegistrationStep3"
       screenOptions={{
         headerStyle: {
           backgroundColor: theme.colors.primary,
@@ -40,6 +41,7 @@ export const AppNavigator = () => {
         <Stack.Group screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Registration" component={RegistrationScreen} />
           <Stack.Screen name="RegistrationStep2" component={RegistrationStep2Screen} />
+          <Stack.Screen name="RegistrationStep3" component={RegistrationStep3Screen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Otp" component={OtpScreen} />
         </Stack.Group>
