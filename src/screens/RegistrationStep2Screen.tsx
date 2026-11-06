@@ -1,8 +1,11 @@
-import React, { useState, useMemo } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Keyboard } from 'react-native';
-import { TextInput, Button, Appbar, Portal, Dialog, RadioButton, Text, SegmentedButtons } from 'react-native-paper';
+import React, { useState, useMemo, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { TextInput, Button, Appbar, Portal, Dialog, RadioButton } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { getAllStates, getDistrictsByState } from '../constants/locations';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../context/LanguageContext';
+import { ALL_MAHARASHTRA_CASTES } from './CasteSelectionScreen';
 
 const primaryColor = '#901c60';
 const accentColor = '#4caf50'; // Vibrant Green for progress
@@ -25,16 +28,20 @@ const DropdownInput = ({ label, value, onPress, textStyle, error }: { label: str
 );
 
 export const RegistrationStep2Screen = ({ route, navigation }: any) => {
+  const insets = useSafeAreaInsets();
+  const { t, language } = useLanguage();
   // Data passed from Step 1
-  const { name, gender, dob, maritalStatus, children, childrenLivingWithMe } = route.params || {};
+  const { mobileNumber, name, gender, dob, maritalStatus, children, childrenLivingWithMe } = route.params || {};
 
   const [religion, setReligion] = useState('');
   const [religionVisible, setReligionVisible] = useState(false);
   const [caste, setCaste] = useState('');
   const [casteVisible, setCasteVisible] = useState(false);
+  const [subcaste, setSubcaste] = useState('');
+  const [subcasteVisible, setSubcasteVisible] = useState(false);
   const [interCaste, setInterCaste] = useState('');
   const [interCasteVisible, setInterCasteVisible] = useState(false);
-  
+
   const [height, setHeight] = useState('');
   const [heightVisible, setHeightVisible] = useState(false);
   const [weight, setWeight] = useState('');
@@ -45,12 +52,20 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
   const [districtVisible, setDistrictVisible] = useState(false);
   const [errors, setErrors] = useState<any>({});
 
+  useEffect(() => {
+    if (route.params?.selectedCaste) {
+      if (route.params.selectedCaste !== caste) {
+        setCaste(route.params.selectedCaste);
+        setSubcaste('');
+        setErrors((prev: any) => ({ ...prev, caste: false }));
+      }
+    }
+  }, [route.params?.selectedCaste]);
 
-  
   const availableDistricts = useMemo(() => {
     const districts = getDistrictsByState('Maharashtra') || [];
-    return [...districts, 'Other'];
-  }, []);
+    return [...districts, language === 'mr' ? 'इतर (Other)' : 'Other'];
+  }, [language]);
 
   const heightOptions = [];
   for (let feet = 4; feet <= 7; feet++) {
@@ -65,7 +80,15 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
     weightOptions.push({ label: `${kg} kg`, value: `${kg}` });
   }
 
-  const religionOptions = [
+  const religionOptions = language === 'mr' ? [
+    { label: 'हिंदू (Hindu)', value: 'hindu' },
+    { label: 'मुस्लिम (Muslim)', value: 'muslim' },
+    { label: 'ख्रिश्चन (Christian)', value: 'christian' },
+    { label: 'शीख (Sikh)', value: 'sikh' },
+    { label: 'बौद्ध (Buddhist)', value: 'buddhist' },
+    { label: 'जैन (Jain)', value: 'jain' },
+    { label: 'इतर (Other)', value: 'other' }
+  ] : [
     { label: 'Hindu', value: 'hindu' },
     { label: 'Muslim', value: 'muslim' },
     { label: 'Christian', value: 'christian' },
@@ -75,34 +98,88 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
     { label: 'Other', value: 'other' }
   ];
 
-  const casteOptions = [
-    { label: 'Maratha', value: 'maratha' },
-    { label: 'Brahmin', value: 'brahmin' },
-    { label: 'Kunbi', value: 'kunbi' },
-    { label: 'Mali', value: 'mali' },
-    { label: 'Dhangar', value: 'dhangar' },
-    { label: 'Chambhar', value: 'chambhar' },
-    { label: 'Mahar / Navabouddha', value: 'mahar' },
-    { label: 'Matang', value: 'matang' },
-    { label: 'Agri', value: 'agri' },
-    { label: 'Bhandari', value: 'bhandari' },
-    { label: 'Vanjari', value: 'vanjari' },
-    { label: 'Koli', value: 'koli' },
-    { label: 'Sonar', value: 'sonar' },
-    { label: 'Teli', value: 'teli' },
-    { label: 'Lingayat', value: 'lingayat' },
-    { label: 'Other', value: 'other' }
-  ];
+  const casteOptions = useMemo(() => {
+    return ALL_MAHARASHTRA_CASTES.map((item) => ({
+      label: language === 'mr' ? item.labelMr : item.labelEn,
+      value: item.value,
+    }));
+  }, [language]);
+
+  const subcasteMap: Record<string, { mr: string[]; en: string[] }> = {
+    maratha: {
+      mr: ['९६ कुळी मराठा', 'देशमुख', 'कुणबी मराठा', 'मराठा', 'इतर'],
+      en: ['96 Kuli Maratha', 'Deshmukh', 'Kunbi Maratha', 'Maratha', 'Other'],
+    },
+    brahmin: {
+      mr: ['देशस्थ ऋग्वेदी', 'देशस्थ यजुर्वेदी', 'कोकणस्थ (चित्पावन)', 'कर्‍हाडे', 'सारस्वत', 'देवरुखे', 'इतर'],
+      en: ['Deshastha Rigvedi', 'Deshastha Yajurvedi', 'Kokanastha (Chitpavan)', 'Karhade', 'Saraswat', 'Devrukhe', 'Other'],
+    },
+    kunbi: {
+      mr: ['कुणबी मराठा', 'तिरोळे कुणबी', 'धानोजे कुणबी', 'खैरे कुणबी', 'झाडे कुणबी', 'इतर'],
+      en: ['Kunbi Maratha', 'Tirole Kunbi', 'Dhanoje Kunbi', 'Khaire Kunbi', 'Zhade Kunbi', 'Other'],
+    },
+    mali: {
+      mr: ['फूल माळी', 'हळदे माळी', 'जिरे माळी', 'कडू माळी', 'इतर'],
+      en: ['Phul Mali', 'Halde Mali', 'Jire Mali', 'Kadu Mali', 'Other'],
+    },
+    dhangar: {
+      mr: ['अहिर', 'हटकरी', 'शेगर', 'खुटेकर', 'झेंडे', 'इतर'],
+      en: ['Ahir', 'Hatkar', 'Shegar', 'Khutekar', 'Zende', 'Other'],
+    },
+    chambhar: {
+      mr: ['हरळा', 'रोहिदास', 'अहिरवार', 'मोची', 'इतर'],
+      en: ['Harale', 'Rohidas', 'Ahirwar', 'Mochi', 'Other'],
+    },
+    mahar: {
+      mr: ['महार', 'नवबौद्ध', 'इतर'],
+      en: ['Mahar', 'Navabouddha', 'Other'],
+    },
+    agri: {
+      mr: ['मिठागरे', 'जसपाटी', 'ढोलपाटी', 'इतर'],
+      en: ['Mithagre', 'Jaspati', 'Dholpati', 'Other'],
+    },
+    bhandari: {
+      mr: ['किर्ते', 'मोरे', 'गावड', 'इतर'],
+      en: ['Kirte', 'More', 'Gavad', 'Other'],
+    },
+    vanjari: {
+      mr: ['भगवानगडी', 'लडजीन', 'रावजीन', 'इतर'],
+      en: ['Bhagwangadi', 'Ladjin', 'Raojin', 'Other'],
+    },
+    koli: {
+      mr: ['मल्हार कोळी', 'महादेव कोळी', 'सूर्यवंशी कोळी', 'इतर'],
+      en: ['Malhar Koli', 'Mahadev Koli', 'Suryavanshi Koli', 'Other'],
+    },
+    sonar: {
+      mr: ['दैवज्ञ सोनार', 'अहिरे सोनार', 'लाड सोनार', 'इतर'],
+      en: ['Daivadnya Sonar', 'Ahire Sonar', 'Lad Sonar', 'Other'],
+    },
+    teli: {
+      mr: ['तिळवण तेली', 'साहू तेली', 'एरंडेल तेली', 'इतर'],
+      en: ['Tilwan Teli', 'Sahu Teli', 'Erandel Teli', 'Other'],
+    },
+    lingayat: {
+      mr: ['वाणी', 'जंगम', 'पंचम', 'दिक्षावंत', 'इतर'],
+      en: ['Vani', 'Jangam', 'Pancham', 'Dikshawant', 'Other'],
+    },
+  };
+
+  const subcasteOptions = useMemo(() => {
+    const list = subcasteMap[caste]
+      ? (language === 'mr' ? subcasteMap[caste].mr : subcasteMap[caste].en)
+      : (language === 'mr' ? ['सर्वसामान्य / लागू नाही', 'इतर'] : ['General / Not Applicable', 'Other']);
+    return list.map(item => ({ label: item, value: item }));
+  }, [caste, language]);
 
   return (
     <View style={[styles.container, { backgroundColor: '#f4f4f6' }]}>
       <StatusBar style="light" />
       <Appbar.Header style={{ backgroundColor: primaryColor, elevation: 0 }}>
         <Appbar.BackAction color="#ffffff" onPress={() => navigation.goBack()} />
-        <Appbar.Content 
-          title="Background Details" 
-          subtitle="Step 2 of 4"
-          titleStyle={{ color: '#ffffff', fontSize: 18, fontWeight: '600' }} 
+        <Appbar.Content
+          title={t('step2Title')}
+          subtitle={t('step2Subtitle')}
+          titleStyle={{ color: '#ffffff', fontSize: 18, fontWeight: '600' }}
           subtitleStyle={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}
         />
       </Appbar.Header>
@@ -115,126 +192,138 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
         <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: '#e0e0e0' }} />
       </View>
 
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView 
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 + insets.bottom }}
           keyboardShouldPersistTaps="handled"
         >
           <View style={{ paddingHorizontal: 20, paddingTop: 16 }}>
-            
+
             <View style={styles.card}>
-            
-            <DropdownInput 
-              label="Religion" 
-              value={religionOptions.find(o => o.value === religion)?.label || ''}
-              onPress={() => setReligionVisible(true)} 
-              error={errors.religion}
-            />
 
-            <DropdownInput 
-              label="Caste" 
-              value={casteOptions.find(o => o.value === caste)?.label || ''}
-              onPress={() => setCasteVisible(true)} 
-              error={errors.caste}
-            />
+              <DropdownInput
+                label={t('religion')}
+                value={religionOptions.find(o => o.value === religion)?.label || ''}
+                onPress={() => setReligionVisible(true)}
+                error={errors.religion}
+              />
 
-            <DropdownInput 
-              label="Inter-caste Marriage" 
-              value={interCaste === 'yes' ? 'Accepted' : interCaste === 'no' ? 'Not Accepted' : ''}
-              onPress={() => setInterCasteVisible(true)} 
-              error={errors.interCaste}
-            />
+              <DropdownInput
+                label={t('caste')}
+                value={casteOptions.find(o => o.value === caste)?.label || (caste ? caste.charAt(0).toUpperCase() + caste.slice(1) : '')}
+                onPress={() => navigation.navigate('CasteSelection', { currentCaste: caste })}
+                error={errors.caste}
+              />
 
-            <DropdownInput 
-              label="District (Maharashtra)" 
-              value={district}
-              onPress={() => setDistrictVisible(true)} 
-              error={errors.district}
-            />
+              <DropdownInput
+                label={t('subcaste')}
+                value={subcaste}
+                onPress={() => {
+                  if (!caste) {
+                    Alert.alert(t('caste'), t('pleaseSelectCaste'));
+                    return;
+                  }
+                  setSubcasteVisible(true);
+                }}
+              />
 
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <View style={{ flex: 0.48 }}>
-                <DropdownInput 
-                  label="Height" 
-                  value={heightOptions.find(o => o.value === height)?.label || ''}
-                  onPress={() => setHeightVisible(true)} 
-                  error={errors.height}
-                />
+              <DropdownInput
+                label={t('interCaste')}
+                value={interCaste === 'yes' ? t('accepted') : interCaste === 'no' ? t('notAccepted') : ''}
+                onPress={() => setInterCasteVisible(true)}
+                error={errors.interCaste}
+              />
+
+              <DropdownInput
+                label={t('district')}
+                value={district}
+                onPress={() => setDistrictVisible(true)}
+                error={errors.district}
+              />
+
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View style={{ flex: 0.48 }}>
+                  <DropdownInput
+                    label={t('height')}
+                    value={heightOptions.find(o => o.value === height)?.label || ''}
+                    onPress={() => setHeightVisible(true)}
+                    error={errors.height}
+                  />
+                </View>
+                <View style={{ flex: 0.48 }}>
+                  <DropdownInput
+                    label={t('weight')}
+                    value={weightOptions.find(o => o.value === weight)?.label || ''}
+                    onPress={() => setWeightVisible(true)}
+                    error={errors.weight}
+                  />
+                </View>
               </View>
-              <View style={{ flex: 0.48 }}>
-                <DropdownInput 
-                  label="Weight" 
-                  value={weightOptions.find(o => o.value === weight)?.label || ''}
-                  onPress={() => setWeightVisible(true)} 
-                  error={errors.weight}
-                />
-              </View>
+
+              <DropdownInput
+                label={t('diet')}
+                value={diet === 'veg' ? t('veg') : diet === 'nonveg' ? t('nonVeg') : diet === 'egg' ? t('egg') : ''}
+                onPress={() => setDietVisible(true)}
+                error={errors.diet}
+              />
+
+              <Button
+                mode="contained"
+                onPress={() => {
+                  let newErrors: any = {};
+                  if (!religion) newErrors.religion = true;
+                  if (!caste) newErrors.caste = true;
+                  if (!interCaste) newErrors.interCaste = true;
+                  if (!district) newErrors.district = true;
+                  if (!height) newErrors.height = true;
+                  if (!weight) newErrors.weight = true;
+                  if (!diet) newErrors.diet = true;
+
+                  setErrors(newErrors);
+
+                  if (newErrors.religion) {
+                    Alert.alert(t('religion'), t('pleaseSelectReligion'));
+                    return;
+                  }
+                  if (newErrors.caste) {
+                    Alert.alert(t('caste'), t('pleaseSelectCaste'));
+                    return;
+                  }
+                  if (newErrors.interCaste) {
+                    Alert.alert(t('interCaste'), t('pleaseSelectInterCaste'));
+                    return;
+                  }
+                  if (newErrors.district) {
+                    Alert.alert(t('district'), t('pleaseSelectDistrict'));
+                    return;
+                  }
+                  if (newErrors.height) {
+                    Alert.alert(t('height'), t('pleaseSelectHeight'));
+                    return;
+                  }
+                  if (newErrors.weight) {
+                    Alert.alert(t('weight'), t('pleaseSelectWeight'));
+                    return;
+                  }
+                  if (newErrors.diet) {
+                    Alert.alert(t('diet'), t('pleaseSelectDiet'));
+                    return;
+                  }
+
+                  // Navigate to Step 3
+                  navigation.navigate('RegistrationStep3', { mobileNumber, name, gender, dob, maritalStatus, children, childrenLivingWithMe, religion, caste, subcaste, interCaste, district, height, weight, diet });
+                }}
+                style={[styles.submitButton, { backgroundColor: primaryColor }]}
+                contentStyle={styles.submitButtonContent}
+                labelStyle={styles.submitButtonText}
+              >
+                {t('next')}
+              </Button>
+
             </View>
-
-            <DropdownInput 
-              label="Diet" 
-              value={diet === 'veg' ? 'Vegetarian' : diet === 'nonveg' ? 'Non-Vegetarian' : diet === 'egg' ? 'Eggetarian' : ''}
-              onPress={() => setDietVisible(true)} 
-              error={errors.diet}
-            />
-
-            <Button 
-              mode="contained" 
-              onPress={() => {
-                let newErrors: any = {};
-                if (!religion) newErrors.religion = true;
-                if (!caste) newErrors.caste = true;
-                if (!interCaste) newErrors.interCaste = true;
-                if (!district) newErrors.district = true;
-                if (!height) newErrors.height = true;
-                if (!weight) newErrors.weight = true;
-                if (!diet) newErrors.diet = true;
-                
-                setErrors(newErrors);
-
-                if (newErrors.religion) {
-                  Alert.alert('Religion', 'Please select your Religion.');
-                  return;
-                }
-                if (newErrors.caste) {
-                  Alert.alert('Caste', 'Please select your Caste.');
-                  return;
-                }
-                if (newErrors.interCaste) {
-                  Alert.alert('Inter-caste', 'Please select your Inter-caste preference.');
-                  return;
-                }
-                if (newErrors.district) {
-                  Alert.alert('District', 'Please select your District.');
-                  return;
-                }
-                if (newErrors.height) {
-                  Alert.alert('Height', 'Please select your Height.');
-                  return;
-                }
-                if (newErrors.weight) {
-                  Alert.alert('Weight', 'Please enter your Weight.');
-                  return;
-                }
-                if (newErrors.diet) {
-                  Alert.alert('Diet', 'Please select your Diet preference.');
-                  return;
-                }
-
-                // Navigate to Step 3
-                navigation.navigate('RegistrationStep3', { name, gender, dob, maritalStatus, children, childrenLivingWithMe, religion, caste, interCaste, district, height, weight, diet });
-              }} 
-              style={[styles.submitButton, { backgroundColor: primaryColor }]}
-              contentStyle={styles.submitButtonContent}
-              labelStyle={styles.submitButtonText}
-            >
-              Next
-            </Button>
-
-          </View>
           </View>
 
         </ScrollView>
@@ -242,19 +331,19 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
 
       <Portal>
         <Dialog visible={weightVisible} onDismiss={() => setWeightVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
-          <Dialog.Title style={styles.dialogTitle}>Select Weight</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>{t('selectWeight')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => {
-                  setWeight(newValue);
-                  setWeightVisible(false);
-                  setErrors({...errors, weight: false});
-                }} value={weight}>
+                setWeight(newValue);
+                setWeightVisible(false);
+                setErrors({ ...errors, weight: false });
+              }} value={weight}>
                 {weightOptions.map(option => (
-                  <RadioButton.Item 
-                    key={option.value} 
-                    label={option.label} 
-                    value={option.value} 
+                  <RadioButton.Item
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
                     color={primaryColor}
                     labelStyle={styles.radioLabel}
                   />
@@ -265,19 +354,19 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
         </Dialog>
 
         <Dialog visible={religionVisible} onDismiss={() => setReligionVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
-          <Dialog.Title style={styles.dialogTitle}>Select Religion</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>{t('selectReligion')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => {
-                  setReligion(newValue);
-                  setReligionVisible(false);
-                  setErrors({...errors, religion: false});
-                }} value={religion}>
+                setReligion(newValue);
+                setReligionVisible(false);
+                setErrors({ ...errors, religion: false });
+              }} value={religion}>
                 {religionOptions.map(option => (
-                  <RadioButton.Item 
-                    key={option.value} 
-                    label={option.label} 
-                    value={option.value} 
+                  <RadioButton.Item
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
                     color={primaryColor}
                     labelStyle={styles.radioLabel}
                   />
@@ -288,19 +377,19 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
         </Dialog>
 
         <Dialog visible={heightVisible} onDismiss={() => setHeightVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
-          <Dialog.Title style={styles.dialogTitle}>Select Height</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>{t('selectHeight')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => {
-                  setHeight(newValue);
-                  setHeightVisible(false);
-                  setErrors({...errors, height: false});
-                }} value={height}>
+                setHeight(newValue);
+                setHeightVisible(false);
+                setErrors({ ...errors, height: false });
+              }} value={height}>
                 {heightOptions.map(option => (
-                  <RadioButton.Item 
-                    key={option.value} 
-                    label={option.label} 
-                    value={option.value} 
+                  <RadioButton.Item
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
                     color={primaryColor}
                     labelStyle={styles.radioLabel}
                   />
@@ -309,23 +398,23 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
             </ScrollView>
           </Dialog.ScrollArea>
         </Dialog>
-        
-        <Dialog visible={casteVisible} onDismiss={() => setCasteVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
-          <Dialog.Title style={styles.dialogTitle}>Select Caste</Dialog.Title>
+
+        {/* Subcaste Dialog */}
+        <Dialog visible={subcasteVisible} onDismiss={() => setSubcasteVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
+          <Dialog.Title style={styles.dialogTitle}>{t('selectSubcaste')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => {
-                  setCaste(newValue);
-                  setCasteVisible(false);
-                  setErrors({...errors, caste: false});
-                }} value={caste}>
-                {casteOptions.map((option) => (
-                  <RadioButton.Item 
-                    key={option.value} 
-                    label={option.label} 
-                    value={option.value} 
+                setSubcaste(newValue);
+                setSubcasteVisible(false);
+              }} value={subcaste}>
+                {subcasteOptions.map((option) => (
+                  <RadioButton.Item
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
                     color={primaryColor}
-                    labelStyle={[styles.radioLabel, { fontSize: 20 }]}
+                    labelStyle={styles.radioLabel}
                   />
                 ))}
               </RadioButton.Group>
@@ -334,47 +423,48 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
         </Dialog>
 
         <Dialog visible={interCasteVisible} onDismiss={() => setInterCasteVisible(false)} style={{ backgroundColor: '#ffffff' }}>
-          <Dialog.Title style={styles.dialogTitle}>Inter-caste Marriage</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>{t('interCaste')}</Dialog.Title>
           <Dialog.Content style={{ paddingHorizontal: 0 }}>
             <RadioButton.Group onValueChange={newValue => {
-                setInterCaste(newValue);
-                setInterCasteVisible(false);
-                setErrors({...errors, interCaste: false});
-              }} value={interCaste}>
-              <RadioButton.Item label="Accepted" value="yes" color={primaryColor} labelStyle={[styles.radioLabel, { fontSize: 20 }]} />
-              <RadioButton.Item label="Not Accepted" value="no" color={primaryColor} labelStyle={[styles.radioLabel, { fontSize: 20 }]} />
+              setInterCaste(newValue);
+              setInterCasteVisible(false);
+              setErrors({ ...errors, interCaste: false });
+            }} value={interCaste}>
+              <RadioButton.Item label={t('accepted')} value="yes" color={primaryColor} labelStyle={styles.radioLabel} />
+              <RadioButton.Item label={t('notAccepted')} value="no" color={primaryColor} labelStyle={styles.radioLabel} />
             </RadioButton.Group>
           </Dialog.Content>
         </Dialog>
 
         <Dialog visible={dietVisible} onDismiss={() => setDietVisible(false)} style={{ backgroundColor: '#ffffff' }}>
-          <Dialog.Title style={styles.dialogTitle}>Diet Preference</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>{t('selectDiet')}</Dialog.Title>
           <Dialog.Content>
             <RadioButton.Group onValueChange={newValue => {
-                setDiet(newValue);
-                setDietVisible(false);
-                setErrors({...errors, diet: false});
-              }} value={diet}>
-              <RadioButton.Item label="Vegetarian" value="veg" color={primaryColor} labelStyle={styles.radioLabel} />
-              <RadioButton.Item label="Non-Vegetarian" value="nonveg" color={primaryColor} labelStyle={styles.radioLabel} />
-              <RadioButton.Item label="Eggetarian" value="egg" color={primaryColor} labelStyle={styles.radioLabel} />
+              setDiet(newValue);
+              setDietVisible(false);
+              setErrors({ ...errors, diet: false });
+            }} value={diet}>
+              <RadioButton.Item label={t('veg')} value="veg" color={primaryColor} labelStyle={styles.radioLabel} />
+              <RadioButton.Item label={t('nonVeg')} value="nonveg" color={primaryColor} labelStyle={styles.radioLabel} />
+              <RadioButton.Item label={t('egg')} value="egg" color={primaryColor} labelStyle={styles.radioLabel} />
             </RadioButton.Group>
           </Dialog.Content>
         </Dialog>
+
         <Dialog visible={districtVisible} onDismiss={() => setDistrictVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
-          <Dialog.Title style={styles.dialogTitle}>Select District</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>{t('selectDistrict')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => {
-                  setDistrict(newValue);
-                  setDistrictVisible(false);
-                  setErrors({...errors, district: false});
-                }} value={district}>
+                setDistrict(newValue);
+                setDistrictVisible(false);
+                setErrors({ ...errors, district: false });
+              }} value={district}>
                 {availableDistricts.map((d: string) => (
-                  <RadioButton.Item 
-                    key={d} 
-                    label={d} 
-                    value={d} 
+                  <RadioButton.Item
+                    key={d}
+                    label={d}
+                    value={d}
                     color={primaryColor}
                     labelStyle={styles.radioLabel}
                   />
@@ -393,17 +483,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   keyboardView: { flex: 1 },
   scrollContent: { padding: 16, paddingBottom: 40 },
-  fieldLabel: {
-    fontSize: 13,
-    color: '#666',
-    marginBottom: 8,
-    marginTop: 4,
-    marginLeft: 2,
-    fontWeight: '500',
-  },
-  segmentedGroup: {
-    marginBottom: 16,
-  },
   card: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
@@ -440,7 +519,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   dialogTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
   },
@@ -448,29 +527,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-  dropdown: {
-    position: 'absolute',
-    top: 60,
-    left: 0,
-    right: 0,
-    zIndex: 1000,
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    borderWidth: 1,
-    borderColor: '#e8e8e8',
-  },
-  dropdownItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  dropdownText: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
-  },
 });
+
+export default RegistrationStep2Screen;

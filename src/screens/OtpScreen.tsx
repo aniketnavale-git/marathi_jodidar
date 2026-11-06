@@ -14,12 +14,14 @@ import {
 import { Button, Text, useTheme, Title, IconButton, Appbar } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { StatusBar } from 'expo-status-bar';
 
 const { width } = Dimensions.get('window');
 
 export const OtpScreen = ({ route, navigation }: any) => {
-  const { mobileNumber } = route.params || { mobileNumber: '' };
+  const { t } = useLanguage();
+  const { mobileNumber, isExistingUser } = route.params || { mobileNumber: '', isExistingUser: false };
   
   const [otp, setOtp] = useState(['', '', '', '']);
   const [timer, setTimer] = useState(60);
@@ -52,13 +54,15 @@ export const OtpScreen = ({ route, navigation }: any) => {
 
   // Countdown timer for Resend OTP
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (timer > 0) {
       interval = setInterval(() => {
         setTimer((prevTimer) => prevTimer - 1);
       }, 1000);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [timer]);
 
   const handleResend = () => {
@@ -104,7 +108,12 @@ export const OtpScreen = ({ route, navigation }: any) => {
   const isOtpComplete = otp.every(digit => digit !== '');
 
   const handleVerify = () => {
-    // Navigate to registration flow and remove OTP from stack
+    // Log the user into the app
+    login(mobileNumber);
+  };
+
+  const handleGoToRegistration = () => {
+    // Navigate to registration flow
     navigation.replace('Registration');
   };
 
@@ -118,7 +127,7 @@ export const OtpScreen = ({ route, navigation }: any) => {
       {/* Standard Paper Theme App Bar */}
       <Appbar.Header style={{ backgroundColor: theme.colors.surface, elevation: 4 }}>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
-        <Appbar.Content title="Verification" titleStyle={{ fontWeight: 'bold' }} />
+        <Appbar.Content title={t('verificationTitle')} titleStyle={{ fontWeight: 'bold' }} />
       </Appbar.Header>
 
       <ScrollView 
@@ -141,9 +150,9 @@ export const OtpScreen = ({ route, navigation }: any) => {
             <MaterialCommunityIcons name="message-lock-outline" size={80} color={theme.colors.primary} />
           </View>
 
-          <Title style={[styles.title, { color: theme.colors.primary }]}>Verification</Title>
+          <Title style={[styles.title, { color: theme.colors.primary }]}>{t('verificationTitle')}</Title>
           <Text style={styles.subtitle}>
-            We have sent a verification code to{'\n'}
+            {t('otpSubtitle')}{'\n'}
             <Text style={{ fontWeight: 'bold' }}>+91 {mobileNumber.replace(/(\d{5})(\d{1,5})/, '$1 $2').trim()}</Text>{' '}
             <Text 
               style={{ color: theme.colors.primary, fontWeight: 'bold', fontSize: 12, textDecorationLine: 'underline' }}
@@ -158,7 +167,9 @@ export const OtpScreen = ({ route, navigation }: any) => {
             {otp.map((digit, index) => (
               <RNTextInput
                 key={index}
-                ref={(ref) => (inputRefs.current[index] = ref)}
+                ref={(ref) => {
+                  inputRefs.current[index] = ref;
+                }}
                 style={[
                   styles.otpInput,
                   { borderColor: digit ? theme.colors.primary : '#e0e0e0' }
@@ -180,8 +191,20 @@ export const OtpScreen = ({ route, navigation }: any) => {
             contentStyle={styles.verifyButtonContent}
             labelStyle={styles.verifyButtonText}
           >
-            Verify & Proceed
+            {t('verifyAndLogin')}
           </Button>
+
+          {!isExistingUser && (
+            <Button 
+              mode="text" 
+              onPress={handleGoToRegistration} 
+              style={{ marginTop: 10 }}
+              textColor={theme.colors.primary}
+              labelStyle={{ fontSize: 14, fontWeight: '600' }}
+            >
+              {t('newRegistration')}
+            </Button>
+          )}
 
           <View style={styles.resendContainer}>
             {timer > 0 ? (
@@ -273,3 +296,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
+
+export default OtpScreen;

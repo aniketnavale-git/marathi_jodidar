@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { TextInput, Button, Appbar, Portal, Dialog, RadioButton } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
+import { useLanguage } from '../context/LanguageContext';
 
 const primaryColor = '#901c60';
 const accentColor = '#4caf50';
@@ -24,6 +25,7 @@ const DropdownInput = ({ label, value, onPress, error }: { label: string, value?
 );
 
 export const RegistrationStep3Screen = ({ route, navigation }: any) => {
+  const { t, language } = useLanguage();
   const previousData = route.params || {};
 
   const [educationLevel, setEducationLevel] = useState('');
@@ -42,7 +44,13 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
 
   const [errors, setErrors] = useState<any>({});
 
-  const eduLevelOptions = [
+  const eduLevelOptions = language === 'mr' ? [
+    { label: 'दहावी / बारावी (High School)', value: 'high_school' },
+    { label: 'डिप्लोमा (Diploma)', value: 'diploma' },
+    { label: 'पदवी (Bachelors)', value: 'bachelors' },
+    { label: 'पदव्युत्तर (Masters)', value: 'masters' },
+    { label: 'डॉक्टरेट (Doctorate)', value: 'doctorate' }
+  ] : [
     { label: 'High School', value: 'high_school' },
     { label: 'Diploma', value: 'diploma' },
     { label: 'Bachelors', value: 'bachelors' },
@@ -50,7 +58,16 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
     { label: 'Doctorate', value: 'doctorate' }
   ];
 
-  const eduFieldOptions = [
+  const eduFieldOptions = language === 'mr' ? [
+    { label: 'अभियांत्रिकी / आयटी (Engineering / IT)', value: 'engineering' },
+    { label: 'वैद्यकीय / आरोग्य (Medical / Healthcare)', value: 'medical' },
+    { label: 'कला / डिझाईन (Arts / Design)', value: 'arts' },
+    { label: 'वाणिज्य / वित्त (Commerce / Finance)', value: 'commerce' },
+    { label: 'विज्ञान (Science)', value: 'science' },
+    { label: 'व्यवस्थापन (Management - MBA/BBA)', value: 'management' },
+    { label: 'कायदा (Law)', value: 'law' },
+    { label: 'इतर (Other)', value: 'other' }
+  ] : [
     { label: 'Engineering / Technology', value: 'engineering' },
     { label: 'Medical / Healthcare', value: 'medical' },
     { label: 'Arts / Design', value: 'arts' },
@@ -61,7 +78,13 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
     { label: 'Other', value: 'other' }
   ];
 
-  const workingWithOptions = [
+  const workingWithOptions = language === 'mr' ? [
+    { label: 'खाजगी कंपनी (Private Company)', value: 'private' },
+    { label: 'शासकीय / निमशासकीय (Government / Public Sector)', value: 'government' },
+    { label: 'संरक्षण दल (Defense / Civil Services)', value: 'defense' },
+    { label: 'व्यवसाय / स्वयंरोजगार (Business / Self-Employed)', value: 'business' },
+    { label: 'सध्या काम करत नाही (Not Working)', value: 'not_working' }
+  ] : [
     { label: 'Private Company', value: 'private' },
     { label: 'Government / Public Sector', value: 'government' },
     { label: 'Defense / Civil Services', value: 'defense' },
@@ -69,7 +92,17 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
     { label: 'Not Working', value: 'not_working' }
   ];
 
-  const incomeOptions = [
+  const incomeOptions = language === 'mr' ? [
+    { label: 'उत्पन्न नाही (No Income)', value: '0' },
+    { label: '१ लाखापर्यंत (Upto 1 Lakh)', value: '1' },
+    { label: '१ ते ३ लाख (1 to 3 Lakhs)', value: '3' },
+    { label: '३ ते ५ लाख (3 to 5 Lakhs)', value: '5' },
+    { label: '५ ते ७ लाख (5 to 7 Lakhs)', value: '7' },
+    { label: '७ ते १० लाख (7 to 10 Lakhs)', value: '10' },
+    { label: '१० ते १५ लाख (10 to 15 Lakhs)', value: '15' },
+    { label: '१५ ते २० लाख (15 to 20 Lakhs)', value: '20' },
+    { label: '२०+ लाख (20+ Lakhs)', value: '20+' }
+  ] : [
     { label: 'No Income', value: '0' },
     { label: 'Upto 1 Lakh', value: '1' },
     { label: '1 to 3 Lakhs', value: '3' },
@@ -92,7 +125,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      Alert.alert('Required Fields', 'Please fill all the required details.');
+      Alert.alert(t('requiredFields'), t('pleaseFillRequired'));
       return;
     }
 
@@ -106,11 +139,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
     };
 
     console.log('Step 3 Data:', step3Data);
-    // TODO: Navigate to RegistrationStep4 when ready
-    // navigation.navigate('RegistrationStep4', step3Data);
-    
-    // Temporarily go to login until Step 4 is built
-    navigation.navigate('Login');
+    navigation.navigate('RegistrationStep4', step3Data);
   };
 
   return (
@@ -119,8 +148,8 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
       <Appbar.Header style={{ backgroundColor: primaryColor, elevation: 0 }}>
         <Appbar.BackAction color="#ffffff" onPress={() => navigation.goBack()} />
         <Appbar.Content 
-          title="Education & Career" 
-          subtitle="Step 3 of 4"
+          title={t('step3Title')} 
+          subtitle={t('step3Subtitle')}
           titleStyle={{ color: '#ffffff', fontSize: 18, fontWeight: '600' }} 
           subtitleStyle={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}
         />
@@ -146,21 +175,21 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
             <View style={styles.card}>
             
               <DropdownInput 
-                label="Education Level" 
+                label={t('educationLevel')} 
                 value={eduLevelOptions.find(o => o.value === educationLevel)?.label || ''}
                 onPress={() => setEduLevelVisible(true)} 
                 error={errors.educationLevel}
               />
 
               <DropdownInput 
-                label="Education Field" 
+                label={t('educationField')} 
                 value={eduFieldOptions.find(o => o.value === educationField)?.label || ''}
                 onPress={() => setEduFieldVisible(true)} 
                 error={errors.educationField}
               />
 
               <DropdownInput 
-                label="Working With" 
+                label={t('workingWith')} 
                 value={workingWithOptions.find(o => o.value === workingWith)?.label || ''}
                 onPress={() => setWorkingWithVisible(true)} 
                 error={errors.workingWith}
@@ -168,7 +197,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
 
               {workingWith !== 'not_working' && (
                 <TextInput
-                  label="Occupation / Designation"
+                  label={t('occupation')}
                   value={occupation}
                   onChangeText={(text) => {
                     setOccupation(text);
@@ -178,12 +207,12 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
                   style={styles.input}
                   outlineStyle={[styles.inputOutline, errors.occupation ? { borderColor: 'red' } : undefined]}
                   theme={{ colors: { primary: primaryColor } }}
-                  placeholder="e.g. Software Engineer"
+                  placeholder={t('occupationPlaceholder')}
                 />
               )}
 
               <DropdownInput 
-                label="Annual Income" 
+                label={t('annualIncome')} 
                 value={incomeOptions.find(o => o.value === annualIncome)?.label || ''}
                 onPress={() => setIncomeVisible(true)} 
                 error={errors.annualIncome}
@@ -196,7 +225,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
                 contentStyle={styles.submitButtonContent}
                 labelStyle={styles.submitButtonText}
               >
-                Next
+                {t('next')}
               </Button>
 
             </View>
@@ -207,7 +236,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
       <Portal>
         {/* Education Level Dialog */}
         <Dialog visible={eduLevelVisible} onDismiss={() => setEduLevelVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
-          <Dialog.Title style={styles.dialogTitle}>Education Level</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>{t('selectEduLevel')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
             <ScrollView>
               <RadioButton.Group onValueChange={val => { setEducationLevel(val); setEduLevelVisible(false); setErrors({...errors, educationLevel: false}); }} value={educationLevel}>
@@ -221,7 +250,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
 
         {/* Education Field Dialog */}
         <Dialog visible={eduFieldVisible} onDismiss={() => setEduFieldVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
-          <Dialog.Title style={styles.dialogTitle}>Education Field</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>{t('selectEduField')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
             <ScrollView>
               <RadioButton.Group onValueChange={val => { setEducationField(val); setEduFieldVisible(false); setErrors({...errors, educationField: false}); }} value={educationField}>
@@ -235,7 +264,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
 
         {/* Working With Dialog */}
         <Dialog visible={workingWithVisible} onDismiss={() => setWorkingWithVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
-          <Dialog.Title style={styles.dialogTitle}>Working With</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>{t('selectWorkingWith')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
             <ScrollView>
               <RadioButton.Group onValueChange={val => { setWorkingWith(val); setWorkingWithVisible(false); setErrors({...errors, workingWith: false}); }} value={workingWith}>
@@ -249,7 +278,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
 
         {/* Annual Income Dialog */}
         <Dialog visible={incomeVisible} onDismiss={() => setIncomeVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
-          <Dialog.Title style={styles.dialogTitle}>Annual Income</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>{t('selectIncome')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
             <ScrollView>
               <RadioButton.Group onValueChange={val => { setAnnualIncome(val); setIncomeVisible(false); setErrors({...errors, annualIncome: false}); }} value={annualIncome}>
@@ -304,7 +333,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   dialogTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
   },
@@ -313,3 +342,6 @@ const styles = StyleSheet.create({
     color: '#333',
   }
 });
+
+export default RegistrationStep3Screen;
+
