@@ -566,11 +566,11 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
             </View>
           </Dialog.Content>
 
-          <Dialog.Actions style={{ flexDirection: 'column', gap: 8, paddingHorizontal: 20, paddingBottom: 16 }}>
+          <View style={{ paddingHorizontal: 20, paddingBottom: 20, paddingTop: 4 }}>
             <Button 
               mode="contained" 
               onPress={handleProceedToStep2}
-              style={{ width: '100%', borderRadius: 8, backgroundColor: primaryColor }}
+              style={{ width: '100%', borderRadius: 8, backgroundColor: primaryColor, marginBottom: 12 }}
               contentStyle={{ height: 48 }}
               labelStyle={{ fontSize: 15, fontWeight: 'bold' }}
             >
@@ -580,13 +580,13 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
               mode="outlined" 
               onPress={() => setConfirmDobVisible(false)}
               style={{ width: '100%', borderRadius: 8, borderColor: '#ccc' }}
-              contentStyle={{ height: 44 }}
+              contentStyle={{ height: 46 }}
               textColor="#555"
               labelStyle={{ fontSize: 14 }}
             >
               {t('editDob')}
             </Button>
-          </Dialog.Actions>
+          </View>
         </Dialog>
       </Portal>
 
