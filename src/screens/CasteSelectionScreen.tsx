@@ -73,11 +73,7 @@ export const CasteSelectionScreen = ({ route, navigation }: any) => {
   const handleSelect = (item: CasteItem) => {
     // Brief delay so ripple animation is visually enjoyed
     setTimeout(() => {
-      navigation.navigate({
-        name: 'RegistrationStep2',
-        params: { selectedCaste: item.value },
-        merge: true,
-      });
+      navigation.navigate('RegistrationStep2', { selectedCaste: item.value });
     }, 120);
   };
 
