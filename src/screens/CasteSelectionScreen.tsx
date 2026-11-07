@@ -8,7 +8,6 @@ import { Appbar, TextInput, Text, useTheme, Divider, TouchableRipple } from 'rea
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { StackActions } from '@react-navigation/native';
 import { useLanguage } from '../context/LanguageContext';
 
 export interface CasteItem {
@@ -16,6 +15,13 @@ export interface CasteItem {
   labelMr: string;
   labelEn: string;
 }
+
+export type CasteSelectListener = (casteValue: string) => void;
+let casteSelectListener: CasteSelectListener | null = null;
+
+export const setCasteSelectListener = (listener: CasteSelectListener | null) => {
+  casteSelectListener = listener;
+};
 
 export const ALL_MAHARASHTRA_CASTES: CasteItem[] = [
   { value: 'maratha', labelMr: 'मराठा (Maratha)', labelEn: 'Maratha' },
@@ -72,11 +78,12 @@ export const CasteSelectionScreen = ({ route, navigation }: any) => {
   }, [searchQuery]);
 
   const handleSelect = (item: CasteItem) => {
+    if (casteSelectListener) {
+      casteSelectListener(item.value);
+    }
     // Brief delay so ripple animation is visually enjoyed
     setTimeout(() => {
-      navigation.dispatch(
-        StackActions.popTo('RegistrationStep2', { selectedCaste: item.value }, { merge: true })
-      );
+      navigation.goBack();
     }, 120);
   };
 

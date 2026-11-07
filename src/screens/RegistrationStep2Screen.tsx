@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { getAllStates, getDistrictsByState } from '../constants/locations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../context/LanguageContext';
-import { ALL_MAHARASHTRA_CASTES } from './CasteSelectionScreen';
+import { ALL_MAHARASHTRA_CASTES, setCasteSelectListener } from './CasteSelectionScreen';
 
 const primaryColor = '#901c60';
 const accentColor = '#4caf50'; // Vibrant Green for progress
@@ -61,6 +61,12 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
       }
     }
   }, [route.params?.selectedCaste]);
+
+  useEffect(() => {
+    return () => {
+      setCasteSelectListener(null);
+    };
+  }, []);
 
   const availableDistricts = useMemo(() => {
     const districts = getDistrictsByState('Maharashtra') || [];
@@ -214,7 +220,14 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
               <DropdownInput
                 label={`${t('caste')} *`}
                 value={casteOptions.find(o => o.value === caste)?.label || (caste ? caste.charAt(0).toUpperCase() + caste.slice(1) : '')}
-                onPress={() => navigation.navigate('CasteSelection', { currentCaste: caste })}
+                onPress={() => {
+                  setCasteSelectListener((selected: string) => {
+                    setCaste(selected);
+                    setSubcaste('');
+                    setErrors((prev: any) => ({ ...prev, caste: false }));
+                  });
+                  navigation.navigate('CasteSelection', { currentCaste: caste });
+                }}
                 error={errors.caste}
               />
 
