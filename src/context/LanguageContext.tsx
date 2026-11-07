@@ -100,7 +100,7 @@ const translations: Record<Language, Record<string, string>> = {
     calculatedAgeLabel: 'तुमचे वय',
     yearsOld: 'वर्षे',
     dobLabel: 'जन्मतारीख',
-    dobWarningNote: 'महत्त्वाची नोंद: नोंदणी पूर्ण झाल्यानंतर तुमची जन्मतारीख व वय पुन्हा बदलता येणार नाही.',
+    dobWarningNote: 'नोंद: जन्मतारीख नंतर बदलता येणार नाही.',
     confirmAndContinue: 'खात्री आहे, पुढे जा',
     editDob: 'जन्मतारीख बदला',
 
@@ -290,7 +290,7 @@ const translations: Record<Language, Record<string, string>> = {
     calculatedAgeLabel: 'Your Age',
     yearsOld: 'years',
     dobLabel: 'Date of Birth',
-    dobWarningNote: 'Important: Date of birth and age cannot be changed after registration. Please ensure they are accurate.',
+    dobWarningNote: 'Note: Date of birth cannot be changed later.',
     confirmAndContinue: 'Confirm & Continue',
     editDob: 'Change DOB',
 

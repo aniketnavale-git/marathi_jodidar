@@ -553,14 +553,15 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
               flexDirection: 'row', 
               backgroundColor: '#fff8e1', 
               borderRadius: 8, 
-              padding: 12, 
+              paddingVertical: 10,
+              paddingHorizontal: 12, 
               borderWidth: 1, 
               borderColor: '#ffe082',
               gap: 8,
-              alignItems: 'flex-start'
+              alignItems: 'center'
             }}>
-              <MaterialCommunityIcons name="alert-circle-outline" size={20} color="#f57c00" style={{ marginTop: 2 }} />
-              <Text style={{ flex: 1, fontSize: 12.5, color: '#795548', lineHeight: 18 }}>
+              <MaterialCommunityIcons name="alert-circle-outline" size={18} color="#f57c00" />
+              <Text style={{ flex: 1, fontSize: 13, color: '#795548', lineHeight: 18, fontWeight: '500' }}>
                 {t('dobWarningNote')}
               </Text>
             </View>
