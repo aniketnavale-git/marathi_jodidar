@@ -138,25 +138,43 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                 <TextInput
                   label={`${t('firstName')} *`}
                   value={firstName}
-                  onChangeText={(text) => { setFirstName(text); setErrors({...errors, firstName: false}); }}
+                  onChangeText={(text) => {
+                    setFirstName(text);
+                    if (errors.firstName) setErrors({...errors, firstName: false});
+                  }}
                   mode="outlined"
                   maxLength={25}
-                  style={styles.input}
+                  autoCapitalize="words"
+                  style={[styles.input, errors.firstName ? { marginBottom: 4 } : undefined]}
                   outlineStyle={[styles.inputOutline, errors.firstName ? { borderColor: 'red' } : undefined]}
                   theme={{ colors: { primary: primaryColor } }}
                 />
+                {errors.firstName && (
+                  <Text style={{ fontSize: 11, color: '#d32f2f', marginBottom: 12, paddingHorizontal: 4 }}>
+                    {firstName.trim().length === 1 ? t('firstNameMinLength') : t('pleaseEnterFirstName')}
+                  </Text>
+                )}
               </View>
               <View style={{ flex: 1 }}>
                 <TextInput
                   label={`${t('lastName')} *`}
                   value={lastName}
-                  onChangeText={(text) => { setLastName(text); setErrors({...errors, lastName: false}); }}
+                  onChangeText={(text) => {
+                    setLastName(text);
+                    if (errors.lastName) setErrors({...errors, lastName: false});
+                  }}
                   mode="outlined"
                   maxLength={25}
-                  style={styles.input}
+                  autoCapitalize="words"
+                  style={[styles.input, errors.lastName ? { marginBottom: 4 } : undefined]}
                   outlineStyle={[styles.inputOutline, errors.lastName ? { borderColor: 'red' } : undefined]}
                   theme={{ colors: { primary: primaryColor } }}
                 />
+                {errors.lastName && (
+                  <Text style={{ fontSize: 11, color: '#d32f2f', marginBottom: 12, paddingHorizontal: 4 }}>
+                    {lastName.trim().length === 1 ? t('lastNameMinLength') : t('pleaseEnterLastName')}
+                  </Text>
+                )}
               </View>
             </View>
 
@@ -270,8 +288,11 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
               mode="contained" 
               onPress={() => {
                 let newErrors: any = {};
-                if (firstName.trim().length < 2) newErrors.firstName = true;
-                if (lastName.trim().length < 2) newErrors.lastName = true;
+                const trimmedFirst = firstName.trim();
+                const trimmedLast = lastName.trim();
+
+                if (trimmedFirst.length < 2) newErrors.firstName = true;
+                if (trimmedLast.length < 2) newErrors.lastName = true;
                 if (!gender) newErrors.gender = true;
                 if (!dobDay) newErrors.dobDay = true;
                 if (!dobMonth) newErrors.dobMonth = true;
@@ -285,11 +306,17 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                 setErrors(newErrors);
 
                 if (newErrors.firstName) {
-                  Alert.alert(t('firstName'), t('pleaseEnterFirstName'));
+                  Alert.alert(
+                    t('firstName'),
+                    trimmedFirst.length === 1 ? t('firstNameMinLength') : t('pleaseEnterFirstName')
+                  );
                   return;
                 }
                 if (newErrors.lastName) {
-                  Alert.alert(t('lastName'), t('pleaseEnterLastName'));
+                  Alert.alert(
+                    t('lastName'),
+                    trimmedLast.length === 1 ? t('lastNameMinLength') : t('pleaseEnterLastName')
+                  );
                   return;
                 }
                 if (newErrors.gender) {
