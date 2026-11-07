@@ -205,14 +205,14 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
             <View style={styles.card}>
 
               <DropdownInput
-                label={t('religion')}
+                label={`${t('religion')} *`}
                 value={religionOptions.find(o => o.value === religion)?.label || ''}
                 onPress={() => setReligionVisible(true)}
                 error={errors.religion}
               />
 
               <DropdownInput
-                label={t('caste')}
+                label={`${t('caste')} *`}
                 value={casteOptions.find(o => o.value === caste)?.label || (caste ? caste.charAt(0).toUpperCase() + caste.slice(1) : '')}
                 onPress={() => navigation.navigate('CasteSelection', { currentCaste: caste })}
                 error={errors.caste}
@@ -231,14 +231,14 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
               />
 
               <DropdownInput
-                label={t('interCaste')}
+                label={`${t('interCaste')} *`}
                 value={interCaste === 'yes' ? t('accepted') : interCaste === 'no' ? t('notAccepted') : ''}
                 onPress={() => setInterCasteVisible(true)}
                 error={errors.interCaste}
               />
 
               <DropdownInput
-                label={t('district')}
+                label={`${t('district')} *`}
                 value={district}
                 onPress={() => setDistrictVisible(true)}
                 error={errors.district}
@@ -247,7 +247,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <View style={{ flex: 0.48 }}>
                   <DropdownInput
-                    label={t('height')}
+                    label={`${t('height')} *`}
                     value={heightOptions.find(o => o.value === height)?.label || ''}
                     onPress={() => setHeightVisible(true)}
                     error={errors.height}
@@ -255,7 +255,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
                 </View>
                 <View style={{ flex: 0.48 }}>
                   <DropdownInput
-                    label={t('weight')}
+                    label={`${t('weight')} *`}
                     value={weightOptions.find(o => o.value === weight)?.label || ''}
                     onPress={() => setWeightVisible(true)}
                     error={errors.weight}
@@ -264,7 +264,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
               </View>
 
               <DropdownInput
-                label={t('diet')}
+                label={`${t('diet')} *`}
                 value={diet === 'veg' ? t('veg') : diet === 'nonveg' ? t('nonVeg') : diet === 'egg' ? t('egg') : ''}
                 onPress={() => setDietVisible(true)}
                 error={errors.diet}
@@ -332,7 +332,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
       <Portal>
         <Dialog visible={weightVisible} onDismiss={() => setWeightVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('selectWeight')}</Dialog.Title>
-          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => {
                 setWeight(newValue);
@@ -355,7 +355,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
 
         <Dialog visible={religionVisible} onDismiss={() => setReligionVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('selectReligion')}</Dialog.Title>
-          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => {
                 setReligion(newValue);
@@ -378,7 +378,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
 
         <Dialog visible={heightVisible} onDismiss={() => setHeightVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('selectHeight')}</Dialog.Title>
-          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => {
                 setHeight(newValue);
@@ -402,7 +402,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
         {/* Subcaste Dialog */}
         <Dialog visible={subcasteVisible} onDismiss={() => setSubcasteVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('selectSubcaste')}</Dialog.Title>
-          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => {
                 setSubcaste(newValue);
@@ -453,7 +453,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
 
         <Dialog visible={districtVisible} onDismiss={() => setDistrictVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('selectDistrict')}</Dialog.Title>
-          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => {
                 setDistrict(newValue);

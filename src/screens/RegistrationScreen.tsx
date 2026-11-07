@@ -9,7 +9,7 @@ const primaryColor = '#901c60';
 const accentColor = '#4caf50'; // Vibrant Green for progress
 
 // Helper for actual dropdowns (City, Religion)
-const DropdownInput = ({ label, value, onPress, textStyle, error }: { label: string, value?: string, onPress?: () => void, textStyle?: any, error?: boolean }) => (
+const DropdownInput = ({ label, value, onPress, textStyle, contentStyle, error }: { label: string, value?: string, onPress?: () => void, textStyle?: any, contentStyle?: any, error?: boolean }) => (
   <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
     <View pointerEvents="none">
       <TextInput
@@ -17,6 +17,7 @@ const DropdownInput = ({ label, value, onPress, textStyle, error }: { label: str
         value={value}
         mode="outlined"
         style={[styles.input, textStyle]}
+        contentStyle={contentStyle}
         outlineStyle={[styles.inputOutline, error ? { borderColor: 'red' } : undefined]}
         right={<TextInput.Icon icon="chevron-down" color="#888" />}
         editable={false}
@@ -75,10 +76,10 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
     { label: 'जुलै', value: '07' }, { label: 'ऑगस्ट', value: '08' }, { label: 'सप्टेंबर', value: '09' },
     { label: 'ऑक्टोबर', value: '10' }, { label: 'नोव्हेंबर', value: '11' }, { label: 'डिसेंबर', value: '12' }
   ] : [
-    { label: 'Jan', value: '01' }, { label: 'Feb', value: '02' }, { label: 'Mar', value: '03' },
-    { label: 'Apr', value: '04' }, { label: 'May', value: '05' }, { label: 'Jun', value: '06' },
-    { label: 'Jul', value: '07' }, { label: 'Aug', value: '08' }, { label: 'Sep', value: '09' },
-    { label: 'Oct', value: '10' }, { label: 'Nov', value: '11' }, { label: 'Dec', value: '12' }
+    { label: 'January', value: '01' }, { label: 'February', value: '02' }, { label: 'March', value: '03' },
+    { label: 'April', value: '04' }, { label: 'May', value: '05' }, { label: 'June', value: '06' },
+    { label: 'July', value: '07' }, { label: 'August', value: '08' }, { label: 'September', value: '09' },
+    { label: 'October', value: '10' }, { label: 'November', value: '11' }, { label: 'December', value: '12' }
   ];
   
   const minAge = gender === 'male' ? 21 : 18;
@@ -135,7 +136,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <View style={{ flex: 1 }}>
                 <TextInput
-                  label={t('firstName')}
+                  label={`${t('firstName')} *`}
                   value={firstName}
                   onChangeText={(text) => { setFirstName(text); setErrors({...errors, firstName: false}); }}
                   mode="outlined"
@@ -147,7 +148,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
               </View>
               <View style={{ flex: 1 }}>
                 <TextInput
-                  label={t('lastName')}
+                  label={`${t('lastName')} *`}
                   value={lastName}
                   onChangeText={(text) => { setLastName(text); setErrors({...errors, lastName: false}); }}
                   mode="outlined"
@@ -159,7 +160,9 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
               </View>
             </View>
 
-            <Text style={styles.fieldLabel}>{t('gender')}</Text>
+            <Text style={styles.fieldLabel}>
+              {t('gender')} <Text style={{ color: '#d32f2f' }}>*</Text>
+            </Text>
             <View style={styles.genderRow}>
               <TouchableOpacity
                 style={[
@@ -200,39 +203,44 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.fieldLabel}>{t('dob')}</Text>
+            <Text style={styles.fieldLabel}>
+              {t('dob')} <Text style={{ color: '#d32f2f' }}>*</Text>
+            </Text>
             <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
               <View style={{ flex: 1 }}>
                 <DropdownInput 
-                  label={t('day')} 
+                  label={`${t('day')} *`} 
                   value={dobDay}
                   onPress={() => setDobDayVisible(true)} 
                   textStyle={{ marginBottom: 0 }}
+                  contentStyle={{ fontSize: 13 }}
                   error={errors.dobDay}
                 />
               </View>
               <View style={{ flex: 1 }}>
                 <DropdownInput 
-                  label={t('month')} 
+                  label={`${t('month')} *`} 
                   value={monthOptions.find(o => o.value === dobMonth)?.label || ''}
                   onPress={() => setDobMonthVisible(true)} 
                   textStyle={{ marginBottom: 0 }}
+                  contentStyle={{ fontSize: 13 }}
                   error={errors.dobMonth}
                 />
               </View>
               <View style={{ flex: 1 }}>
                 <DropdownInput 
-                  label={t('year')} 
+                  label={`${t('year')} *`} 
                   value={dobYear}
                   onPress={() => setDobYearVisible(true)} 
                   textStyle={{ marginBottom: 0 }}
+                  contentStyle={{ fontSize: 13 }}
                   error={errors.dobYear}
                 />
               </View>
             </View>
             
             <DropdownInput 
-              label={t('maritalStatus')} 
+              label={`${t('maritalStatus')} *`} 
               value={maritalOptions.find(o => o.value === maritalStatus)?.label || ''}
               onPress={() => setMaritalStatusVisible(true)} 
               error={errors.maritalStatus}
@@ -241,7 +249,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
             {maritalStatus !== '' && maritalStatus !== 'single' && (
               <>
                 <DropdownInput 
-                  label={t('children')} 
+                  label={`${t('children')} *`} 
                   value={childrenOptions.find(o => o.value === children)?.label || ''}
                   onPress={() => setChildrenVisible(true)}
                   error={errors.children}
@@ -249,7 +257,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                 
                 {children !== '' && children !== 'none' && (
                   <DropdownInput 
-                    label={t('livingWithYou')} 
+                    label={`${t('livingWithYou')} *`} 
                     value={livingOptions.find(o => o.value === childrenLivingWithMe)?.label || ''}
                     onPress={() => setChildrenLivingVisible(true)}
                     error={errors.childrenLivingWithMe}
@@ -332,7 +340,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
       <Portal>
         <Dialog visible={dobDayVisible} onDismiss={() => setDobDayVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('day')}</Dialog.Title>
-          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => { setDobDay(newValue); setDobDayVisible(false); setErrors({...errors, dobDay: false}); }} value={dobDay}>
                 {dayOptions.map(option => (
@@ -345,7 +353,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
 
         <Dialog visible={dobMonthVisible} onDismiss={() => setDobMonthVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('month')}</Dialog.Title>
-          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => { setDobMonth(newValue); setDobMonthVisible(false); setErrors({...errors, dobMonth: false}); }} value={dobMonth}>
                 {monthOptions.map(option => (
@@ -358,7 +366,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
 
         <Dialog visible={dobYearVisible} onDismiss={() => setDobYearVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('year')}</Dialog.Title>
-          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => { setDobYear(newValue); setDobYearVisible(false); setErrors({...errors, dobYear: false}); }} value={dobYear}>
                 {yearOptions.map(option => (

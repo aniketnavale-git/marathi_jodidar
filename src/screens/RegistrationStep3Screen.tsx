@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { TextInput, Button, Appbar, Portal, Dialog, RadioButton } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../context/LanguageContext';
 
 const primaryColor = '#901c60';
@@ -25,6 +26,7 @@ const DropdownInput = ({ label, value, onPress, error }: { label: string, value?
 );
 
 export const RegistrationStep3Screen = ({ route, navigation }: any) => {
+  const insets = useSafeAreaInsets();
   const { t, language } = useLanguage();
   const previousData = route.params || {};
 
@@ -168,28 +170,28 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView 
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 + insets.bottom }}
           keyboardShouldPersistTaps="handled"
         >
           <View style={{ paddingHorizontal: 20, paddingTop: 16 }}>
             <View style={styles.card}>
             
               <DropdownInput 
-                label={t('educationLevel')} 
+                label={`${t('educationLevel')} *`} 
                 value={eduLevelOptions.find(o => o.value === educationLevel)?.label || ''}
                 onPress={() => setEduLevelVisible(true)} 
                 error={errors.educationLevel}
               />
 
               <DropdownInput 
-                label={t('educationField')} 
+                label={`${t('educationField')} *`} 
                 value={eduFieldOptions.find(o => o.value === educationField)?.label || ''}
                 onPress={() => setEduFieldVisible(true)} 
                 error={errors.educationField}
               />
 
               <DropdownInput 
-                label={t('workingWith')} 
+                label={`${t('workingWith')} *`} 
                 value={workingWithOptions.find(o => o.value === workingWith)?.label || ''}
                 onPress={() => setWorkingWithVisible(true)} 
                 error={errors.workingWith}
@@ -197,7 +199,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
 
               {workingWith !== 'not_working' && (
                 <TextInput
-                  label={t('occupation')}
+                  label={`${t('occupation')} *`}
                   value={occupation}
                   onChangeText={(text) => {
                     setOccupation(text);
@@ -212,7 +214,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
               )}
 
               <DropdownInput 
-                label={t('annualIncome')} 
+                label={`${t('annualIncome')} *`} 
                 value={incomeOptions.find(o => o.value === annualIncome)?.label || ''}
                 onPress={() => setIncomeVisible(true)} 
                 error={errors.annualIncome}
@@ -237,7 +239,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
         {/* Education Level Dialog */}
         <Dialog visible={eduLevelVisible} onDismiss={() => setEduLevelVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('selectEduLevel')}</Dialog.Title>
-          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView>
               <RadioButton.Group onValueChange={val => { setEducationLevel(val); setEduLevelVisible(false); setErrors({...errors, educationLevel: false}); }} value={educationLevel}>
                 {eduLevelOptions.map(opt => (
@@ -251,7 +253,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
         {/* Education Field Dialog */}
         <Dialog visible={eduFieldVisible} onDismiss={() => setEduFieldVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('selectEduField')}</Dialog.Title>
-          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView>
               <RadioButton.Group onValueChange={val => { setEducationField(val); setEduFieldVisible(false); setErrors({...errors, educationField: false}); }} value={educationField}>
                 {eduFieldOptions.map(opt => (
@@ -265,7 +267,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
         {/* Working With Dialog */}
         <Dialog visible={workingWithVisible} onDismiss={() => setWorkingWithVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('selectWorkingWith')}</Dialog.Title>
-          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView>
               <RadioButton.Group onValueChange={val => { setWorkingWith(val); setWorkingWithVisible(false); setErrors({...errors, workingWith: false}); }} value={workingWith}>
                 {workingWithOptions.map(opt => (
@@ -279,7 +281,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
         {/* Annual Income Dialog */}
         <Dialog visible={incomeVisible} onDismiss={() => setIncomeVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('selectIncome')}</Dialog.Title>
-          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView>
               <RadioButton.Group onValueChange={val => { setAnnualIncome(val); setIncomeVisible(false); setErrors({...errors, annualIncome: false}); }} value={annualIncome}>
                 {incomeOptions.map(opt => (

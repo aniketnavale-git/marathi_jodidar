@@ -4,6 +4,7 @@ import { Button, Appbar, Text } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -11,6 +12,7 @@ const primaryColor = '#901c60';
 const accentColor = '#4caf50';
 
 export const RegistrationStep4Screen = ({ route, navigation }: any) => {
+  const insets = useSafeAreaInsets();
   const { t } = useLanguage();
   const previousData = route.params || {};
   const [image, setImage] = useState<string | null>(null);
@@ -82,7 +84,7 @@ export const RegistrationStep4Screen = ({ route, navigation }: any) => {
       </View>
 
       <ScrollView 
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 + insets.bottom }}
       >
         <View style={{ paddingHorizontal: 20, paddingTop: 16, alignItems: 'center' }}>
           <View style={styles.card}>
