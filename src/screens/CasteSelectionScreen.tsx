@@ -3,9 +3,8 @@ import {
   View,
   StyleSheet,
   FlatList,
-  TouchableOpacity,
 } from 'react-native';
-import { Appbar, TextInput, Text, useTheme, Divider } from 'react-native-paper';
+import { Appbar, TextInput, Text, useTheme, Divider, TouchableRipple } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -72,12 +71,14 @@ export const CasteSelectionScreen = ({ route, navigation }: any) => {
   }, [searchQuery]);
 
   const handleSelect = (item: CasteItem) => {
-    // Return selected caste to RegistrationStep2
-    navigation.navigate({
-      name: 'RegistrationStep2',
-      params: { selectedCaste: item.value },
-      merge: true,
-    });
+    // Brief delay so ripple animation is visually enjoyed
+    setTimeout(() => {
+      navigation.navigate({
+        name: 'RegistrationStep2',
+        params: { selectedCaste: item.value },
+        merge: true,
+      });
+    }, 120);
   };
 
   return (
@@ -125,25 +126,27 @@ export const CasteSelectionScreen = ({ route, navigation }: any) => {
           const displayLabel = language === 'mr' ? item.labelMr : item.labelEn;
 
           return (
-            <TouchableOpacity
+            <TouchableRipple
               style={[styles.listItem, isSelected && { backgroundColor: '#fdf2f7' }]}
               onPress={() => handleSelect(item)}
-              activeOpacity={0.7}
+              rippleColor="rgba(144, 28, 96, 0.15)"
             >
-              <Text
-                style={[
-                  styles.itemText,
-                  isSelected && { color: primaryColor, fontWeight: 'bold' },
-                ]}
-              >
-                {displayLabel}
-              </Text>
-              <MaterialCommunityIcons
-                name={isSelected ? 'radiobox-marked' : 'radiobox-blank'}
-                size={22}
-                color={isSelected ? primaryColor : '#bbbbbb'}
-              />
-            </TouchableOpacity>
+              <View style={styles.listItemRow}>
+                <Text
+                  style={[
+                    styles.itemText,
+                    isSelected && { color: primaryColor, fontWeight: 'bold' },
+                  ]}
+                >
+                  {displayLabel}
+                </Text>
+                <MaterialCommunityIcons
+                  name={isSelected ? 'radiobox-marked' : 'radiobox-blank'}
+                  size={22}
+                  color={isSelected ? primaryColor : '#bbbbbb'}
+                />
+              </View>
+            </TouchableRipple>
           );
         }}
         ListEmptyComponent={
@@ -180,11 +183,14 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   listItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+  },
+  listItemRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
+    width: '100%',
   },
   itemText: {
     fontSize: 16,
