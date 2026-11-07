@@ -52,7 +52,11 @@ export const AppNavigator = () => {
           <Stack.Screen name="RegistrationStep2" component={RegistrationStep2Screen} />
           <Stack.Screen name="RegistrationStep3" component={RegistrationStep3Screen} />
           <Stack.Screen name="RegistrationStep4" component={RegistrationStep4Screen} />
-          <Stack.Screen name="CasteSelection" component={CasteSelectionScreen} />
+          <Stack.Screen 
+            name="CasteSelection" 
+            component={CasteSelectionScreen} 
+            options={{ animation: 'slide_from_right' }}
+          />
         </Stack.Group>
       ) : (
         // Main App Stack
