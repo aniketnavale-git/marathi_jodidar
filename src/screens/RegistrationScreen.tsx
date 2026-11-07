@@ -42,6 +42,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
   const [dobDayVisible, setDobDayVisible] = useState(false);
   const [dobMonthVisible, setDobMonthVisible] = useState(false);
   const [dobYearVisible, setDobYearVisible] = useState(false);
+  const [confirmDobVisible, setConfirmDobVisible] = useState(false);
 
   const [children, setChildren] = useState('');
   const [childrenVisible, setChildrenVisible] = useState(false);
@@ -91,6 +92,39 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
     label: `${currentYear - minAge - i}`, 
     value: `${currentYear - minAge - i}` 
   }));
+
+  const calculateAge = (day: string, month: string, year: string) => {
+    if (!day || !month || !year) return 0;
+    const birthDate = new Date(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10));
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const calculatedAge = calculateAge(dobDay, dobMonth, dobYear);
+  const formattedDob = dobDay && dobMonth && dobYear
+    ? `${dobDay} ${monthOptions.find(o => o.value === dobMonth)?.label || dobMonth} ${dobYear}`
+    : '';
+
+  const handleProceedToStep2 = () => {
+    setConfirmDobVisible(false);
+    navigation.navigate('RegistrationStep2', {
+      mobileNumber,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      name: `${firstName.trim()} ${lastName.trim()}`,
+      gender,
+      dob: `${dobDay}/${dobMonth}/${dobYear}`,
+      age: calculatedAge,
+      maritalStatus,
+      children,
+      childrenLivingWithMe
+    });
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: '#f4f4f6' }]}>
@@ -327,6 +361,15 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                   Alert.alert(t('dob'), t('pleaseSelectDob'));
                   return;
                 }
+                if (calculatedAge < minAge) {
+                  Alert.alert(
+                    t('dob'),
+                    language === 'mr' 
+                      ? `${gender === 'male' ? 'वर (मुलगा)' : 'वधू (मुलगी)'} चे वय किमान ${minAge} वर्षे असणे आवश्यक आहे.`
+                      : `Minimum age required is ${minAge} years for ${gender === 'male' ? 'Groom' : 'Bride'}.`
+                  );
+                  return;
+                }
                 if (newErrors.maritalStatus) {
                   Alert.alert(t('maritalStatus'), t('pleaseSelectMarital'));
                   return;
@@ -340,17 +383,8 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                   return;
                 }
                 
-                navigation.navigate('RegistrationStep2', {
-                  mobileNumber,
-                  firstName: firstName.trim(),
-                  lastName: lastName.trim(),
-                  name: `${firstName.trim()} ${lastName.trim()}`,
-                  gender,
-                  dob: `${dobDay}/${dobMonth}/${dobYear}`,
-                  maritalStatus,
-                  children,
-                  childrenLivingWithMe
-                });
+                // Show confirmation modal with age and unchangeable DOB alert
+                setConfirmDobVisible(true);
               }} 
               style={[styles.submitButton, { backgroundColor: primaryColor }]}
               contentStyle={styles.submitButtonContent}
@@ -465,6 +499,94 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
               ))}
             </RadioButton.Group>
           </Dialog.Content>
+        </Dialog>
+
+        {/* Age and Unchangeable DOB Confirmation Dialog */}
+        <Dialog 
+          visible={confirmDobVisible} 
+          onDismiss={() => setConfirmDobVisible(false)} 
+          style={{ backgroundColor: '#ffffff', borderRadius: 16 }}
+        >
+          <View style={{ alignItems: 'center', paddingTop: 20, paddingHorizontal: 20 }}>
+            <View style={{ 
+              width: 56, 
+              height: 56, 
+              borderRadius: 28, 
+              backgroundColor: '#fdf2f7', 
+              justifyContent: 'center', 
+              alignItems: 'center',
+              marginBottom: 12
+            }}>
+              <MaterialCommunityIcons name="calendar-clock" size={32} color={primaryColor} />
+            </View>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#222', textAlign: 'center' }}>
+              {t('confirmDobTitle')}
+            </Text>
+          </View>
+
+          <Dialog.Content style={{ paddingTop: 14, paddingHorizontal: 20 }}>
+            <View style={{ 
+              backgroundColor: '#fbf5f8', 
+              borderRadius: 12, 
+              paddingVertical: 14,
+              paddingHorizontal: 16, 
+              borderWidth: 1, 
+              borderColor: '#f0dbe7',
+              alignItems: 'center',
+              marginBottom: 14
+            }}>
+              <Text style={{ fontSize: 13, color: '#666', marginBottom: 2 }}>
+                {t('calculatedAgeLabel')}
+              </Text>
+              <Text style={{ fontSize: 30, fontWeight: 'bold', color: primaryColor, marginBottom: 4 }}>
+                {calculatedAge} <Text style={{ fontSize: 18, fontWeight: 'normal', color: '#444' }}>{t('yearsOld')}</Text>
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <MaterialCommunityIcons name="cake-variant-outline" size={16} color="#777" />
+                <Text style={{ fontSize: 14, color: '#444', fontWeight: '500' }}>
+                  {formattedDob}
+                </Text>
+              </View>
+            </View>
+
+            <View style={{ 
+              flexDirection: 'row', 
+              backgroundColor: '#fff8e1', 
+              borderRadius: 8, 
+              padding: 12, 
+              borderWidth: 1, 
+              borderColor: '#ffe082',
+              gap: 8,
+              alignItems: 'flex-start'
+            }}>
+              <MaterialCommunityIcons name="alert-circle-outline" size={20} color="#f57c00" style={{ marginTop: 2 }} />
+              <Text style={{ flex: 1, fontSize: 12.5, color: '#795548', lineHeight: 18 }}>
+                {t('dobWarningNote')}
+              </Text>
+            </View>
+          </Dialog.Content>
+
+          <Dialog.Actions style={{ flexDirection: 'column', gap: 8, paddingHorizontal: 20, paddingBottom: 16 }}>
+            <Button 
+              mode="contained" 
+              onPress={handleProceedToStep2}
+              style={{ width: '100%', borderRadius: 8, backgroundColor: primaryColor }}
+              contentStyle={{ height: 48 }}
+              labelStyle={{ fontSize: 15, fontWeight: 'bold' }}
+            >
+              {t('confirmAndContinue')}
+            </Button>
+            <Button 
+              mode="outlined" 
+              onPress={() => setConfirmDobVisible(false)}
+              style={{ width: '100%', borderRadius: 8, borderColor: '#ccc' }}
+              contentStyle={{ height: 44 }}
+              textColor="#555"
+              labelStyle={{ fontSize: 14 }}
+            >
+              {t('editDob')}
+            </Button>
+          </Dialog.Actions>
         </Dialog>
       </Portal>
 

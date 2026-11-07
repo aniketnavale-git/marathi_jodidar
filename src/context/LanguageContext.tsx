@@ -96,6 +96,13 @@ const translations: Record<Language, Record<string, string>> = {
     pleaseSelectMarital: 'कृपया वैवाहिक स्थिती निवडा.',
     pleaseSelectChildren: 'कृपया मुलांची संख्या निवडा.',
     pleaseSelectLiving: 'कृपया मुले सोबत राहतात का ते निवडा.',
+    confirmDobTitle: 'वय व जन्मतारीख पडताळणी',
+    calculatedAgeLabel: 'तुमचे वय',
+    yearsOld: 'वर्षे',
+    dobLabel: 'जन्मतारीख',
+    dobWarningNote: 'महत्त्वाची नोंद: नोंदणी पूर्ण झाल्यानंतर तुमची जन्मतारीख व वय पुन्हा बदलता येणार नाही.',
+    confirmAndContinue: 'खात्री आहे, पुढे जा',
+    editDob: 'जन्मतारीख बदला',
 
     // Registration Step 2
     step2Title: 'पार्श्वभूमी व जात',
@@ -279,6 +286,13 @@ const translations: Record<Language, Record<string, string>> = {
     pleaseSelectMarital: 'Please select your Marital Status.',
     pleaseSelectChildren: 'Please select the Number of Children.',
     pleaseSelectLiving: 'Please specify if Children are living with you.',
+    confirmDobTitle: 'Confirm Age & Date of Birth',
+    calculatedAgeLabel: 'Your Age',
+    yearsOld: 'years',
+    dobLabel: 'Date of Birth',
+    dobWarningNote: 'Important: Date of birth and age cannot be changed after registration. Please ensure they are accurate.',
+    confirmAndContinue: 'Confirm & Continue',
+    editDob: 'Change DOB',
 
     // Registration Step 2
     step2Title: 'Background Details',

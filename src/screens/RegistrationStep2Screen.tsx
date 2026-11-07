@@ -31,7 +31,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { t, language } = useLanguage();
   // Data passed from Step 1
-  const { mobileNumber, name, gender, dob, maritalStatus, children, childrenLivingWithMe } = route.params || {};
+  const { mobileNumber, name, gender, dob, age, maritalStatus, children, childrenLivingWithMe } = route.params || {};
 
   const [religion, setReligion] = useState('');
   const [religionVisible, setReligionVisible] = useState(false);
@@ -314,7 +314,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
                   }
 
                   // Navigate to Step 3
-                  navigation.navigate('RegistrationStep3', { mobileNumber, name, gender, dob, maritalStatus, children, childrenLivingWithMe, religion, caste, subcaste, interCaste, district, height, weight, diet });
+                  navigation.navigate('RegistrationStep3', { mobileNumber, name, gender, dob, age, maritalStatus, children, childrenLivingWithMe, religion, caste, subcaste, interCaste, district, height, weight, diet });
                 }}
                 style={[styles.submitButton, { backgroundColor: primaryColor }]}
                 contentStyle={styles.submitButtonContent}
