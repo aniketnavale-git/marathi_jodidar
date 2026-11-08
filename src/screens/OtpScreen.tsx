@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   Image
 } from 'react-native';
-import { Button, Text, useTheme, Title, IconButton, Appbar } from 'react-native-paper';
+import { Button, Text, useTheme, Title, Appbar } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';

@@ -45,18 +45,20 @@ export const AppNavigator = () => {
     >
       {!isLoggedIn ? (
         // Auth Stack
-        <Stack.Group screenOptions={{ headerShown: false }}>
+        <Stack.Group
+          screenOptions={{
+            headerShown: false,
+            animation: 'slide_from_right',
+            contentStyle: { backgroundColor: '#f4f4f6' },
+          }}
+        >
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Otp" component={OtpScreen} />
           <Stack.Screen name="Registration" component={RegistrationScreen} />
           <Stack.Screen name="RegistrationStep2" component={RegistrationStep2Screen} />
           <Stack.Screen name="RegistrationStep3" component={RegistrationStep3Screen} />
           <Stack.Screen name="RegistrationStep4" component={RegistrationStep4Screen} />
-          <Stack.Screen 
-            name="CasteSelection" 
-            component={CasteSelectionScreen} 
-            options={{ animation: 'slide_from_right' }}
-          />
+          <Stack.Screen name="CasteSelection" component={CasteSelectionScreen} />
         </Stack.Group>
       ) : (
         // Main App Stack

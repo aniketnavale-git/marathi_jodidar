@@ -155,8 +155,9 @@ const translations: Record<Language, Record<string, string>> = {
     occupation: 'व्यवसाय / पद',
     occupationPlaceholder: 'उदा. Software Engineer, Doctor, शिक्षक...',
     searchOccupation: 'व्यवसाय शोधा (उदा. Engineer, Doctor)...',
-    annualIncome: 'वार्षिक उत्पन्न',
-    selectIncome: 'वार्षिक उत्पन्न निवडा',
+    annualIncome: 'मासिक उत्पन्न',
+    monthlyIncome: 'मासिक उत्पन्न',
+    selectIncome: 'मासिक उत्पन्न निवडा',
     aboutMe: 'स्वतःबद्दल माहिती व अपेक्षा',
 
     // Registration Step 4
@@ -345,8 +346,9 @@ const translations: Record<Language, Record<string, string>> = {
     occupation: 'Occupation / Designation',
     occupationPlaceholder: 'e.g. Software Engineer, Doctor, Teacher...',
     searchOccupation: 'Search occupation (e.g. Engineer, Doctor)...',
-    annualIncome: 'Annual Income',
-    selectIncome: 'Select Annual Income',
+    annualIncome: 'Monthly Income',
+    monthlyIncome: 'Monthly Income',
+    selectIncome: 'Select Monthly Income',
     aboutMe: 'About Yourself & Expectations',
 
     // Registration Step 4

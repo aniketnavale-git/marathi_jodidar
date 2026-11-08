@@ -81,10 +81,7 @@ export const CasteSelectionScreen = ({ route, navigation }: any) => {
     if (casteSelectListener) {
       casteSelectListener(item.value);
     }
-    // Brief delay so ripple animation is visually enjoyed
-    setTimeout(() => {
-      navigation.goBack();
-    }, 120);
+    navigation.goBack();
   };
 
   return (

@@ -136,7 +136,7 @@ export const ProfileDetailsScreen = ({ route, navigation }: any) => {
           )}
           {profile.income && (
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>वार्षिक उत्पन्न:</Text>
+              <Text style={styles.detailLabel}>मासिक उत्पन्न:</Text>
               <Text style={styles.detailValue}>{profile.income}</Text>
             </View>
           )}

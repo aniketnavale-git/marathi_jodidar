@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { TextInput, Button, Appbar, Portal, Dialog, RadioButton } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Keyboard } from 'react-native';
+import { TextInput, Button, Appbar, Portal, Dialog, RadioButton, Text } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../context/LanguageContext';
@@ -27,7 +27,7 @@ const DropdownInput = ({ label, value, onPress, error }: { label: string, value?
 
 export const RegistrationStep3Screen = ({ route, navigation }: any) => {
   const insets = useSafeAreaInsets();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const previousData = route.params || {};
 
   const [educationLevel, setEducationLevel] = useState('');
@@ -40,36 +40,81 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
   const [workingWithVisible, setWorkingWithVisible] = useState(false);
 
   const [occupation, setOccupation] = useState('');
+  const [occupationVisible, setOccupationVisible] = useState(false);
+  const [occupationSearch, setOccupationSearch] = useState('');
 
   const [annualIncome, setAnnualIncome] = useState('');
   const [incomeVisible, setIncomeVisible] = useState(false);
 
-  const [errors, setErrors] = useState<any>({});
+  const [about, setAbout] = useState('');
 
-  const eduLevelOptions = language === 'mr' ? [
-    { label: 'दहावी / बारावी (High School)', value: 'high_school' },
-    { label: 'डिप्लोमा (Diploma)', value: 'diploma' },
-    { label: 'पदवी (Bachelors)', value: 'bachelors' },
-    { label: 'पदव्युत्तर (Masters)', value: 'masters' },
-    { label: 'डॉक्टरेट (Doctorate)', value: 'doctorate' }
-  ] : [
-    { label: 'High School', value: 'high_school' },
+  const [errors, setErrors] = useState<any>({});
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  const eduLevelOptions = [
+    { label: 'School', value: 'header_school', isHeader: true },
+    { label: '10th / SSC', value: '10th_ssc' },
+    { label: '12th / HSC', value: '12th_hsc' },
+    { label: 'Diploma', value: 'header_diploma', isHeader: true },
     { label: 'Diploma', value: 'diploma' },
-    { label: 'Bachelors', value: 'bachelors' },
-    { label: 'Masters', value: 'masters' },
-    { label: 'Doctorate', value: 'doctorate' }
+    { label: "Bachelor's Degree", value: 'header_bachelors', isHeader: true },
+    { label: 'B.A.', value: 'ba' },
+    { label: 'B.Com', value: 'bcom' },
+    { label: 'B.Sc.', value: 'bsc' },
+    { label: 'B.E.', value: 'be' },
+    { label: 'B.Tech', value: 'btech' },
+    { label: 'BBA', value: 'bba' },
+    { label: 'BCA', value: 'bca' },
+    { label: 'B.Arch', value: 'barch' },
+    { label: 'B.Pharm', value: 'bpharm' },
+    { label: 'MBBS', value: 'mbbs' },
+    { label: 'BDS', value: 'bds' },
+    { label: 'LLB', value: 'llb' },
+    { label: 'B.Ed', value: 'bed' },
+    { label: "Other Bachelor's Degree", value: 'other_bachelors' },
+    { label: "Master's Degree", value: 'header_masters', isHeader: true },
+    { label: 'M.A.', value: 'ma' },
+    { label: 'M.Com', value: 'mcom' },
+    { label: 'M.Sc.', value: 'msc' },
+    { label: 'M.E.', value: 'me' },
+    { label: 'M.Tech', value: 'mtech' },
+    { label: 'MBA', value: 'mba' },
+    { label: 'MCA', value: 'mca' },
+    { label: 'M.Arch', value: 'march' },
+    { label: 'M.Pharm', value: 'mpharm' },
+    { label: 'MD', value: 'md' },
+    { label: 'MS', value: 'ms' },
+    { label: 'MDS', value: 'mds' },
+    { label: 'LLM', value: 'llm' },
+    { label: 'M.Ed', value: 'med' },
+    { label: "Other Master's Degree", value: 'other_masters' },
+    { label: 'Higher Education', value: 'header_higher', isHeader: true },
+    { label: 'PhD', value: 'phd' },
+    { label: 'M.Phil', value: 'mphil' },
+    { label: 'Other', value: 'other_higher' },
+    { label: 'Not specified', value: 'header_not_specified', isHeader: true },
+    { label: 'Other', value: 'other' },
+    { label: 'Prefer not to say', value: 'prefer_not_to_say' }
   ];
 
-  const eduFieldOptions = language === 'mr' ? [
-    { label: 'अभियांत्रिकी / आयटी (Engineering / IT)', value: 'engineering' },
-    { label: 'वैद्यकीय / आरोग्य (Medical / Healthcare)', value: 'medical' },
-    { label: 'कला / डिझाईन (Arts / Design)', value: 'arts' },
-    { label: 'वाणिज्य / वित्त (Commerce / Finance)', value: 'commerce' },
-    { label: 'विज्ञान (Science)', value: 'science' },
-    { label: 'व्यवस्थापन (Management - MBA/BBA)', value: 'management' },
-    { label: 'कायदा (Law)', value: 'law' },
-    { label: 'इतर (Other)', value: 'other' }
-  ] : [
+  const eduFieldOptions = [
     { label: 'Engineering / Technology', value: 'engineering' },
     { label: 'Medical / Healthcare', value: 'medical' },
     { label: 'Arts / Design', value: 'arts' },
@@ -80,13 +125,91 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
     { label: 'Other', value: 'other' }
   ];
 
-  const workingWithOptions = language === 'mr' ? [
-    { label: 'खाजगी कंपनी (Private Company)', value: 'private' },
-    { label: 'शासकीय / निमशासकीय (Government / Public Sector)', value: 'government' },
-    { label: 'संरक्षण दल (Defense / Civil Services)', value: 'defense' },
-    { label: 'व्यवसाय / स्वयंरोजगार (Business / Self-Employed)', value: 'business' },
-    { label: 'सध्या काम करत नाही (Not Working)', value: 'not_working' }
-  ] : [
+  const occupationOptions = [
+    { label: 'Healthcare', value: 'header_healthcare', isHeader: true },
+    { label: 'Doctor', value: 'doctor' },
+    { label: 'Dentist', value: 'dentist' },
+    { label: 'Nurse', value: 'nurse' },
+    { label: 'Pharmacist', value: 'pharmacist' },
+    { label: 'Physiotherapist', value: 'physiotherapist' },
+    { label: 'Occupational Therapist', value: 'occupational_therapist' },
+    { label: 'Medical Professional', value: 'medical_professional' },
+    { label: 'Healthcare Professional', value: 'healthcare_professional' },
+    { label: 'Other Healthcare Professional', value: 'other_healthcare' },
+    { label: 'Engineering & Technology', value: 'header_engineering', isHeader: true },
+    { label: 'Software Engineer', value: 'software_engineer' },
+    { label: 'Software Developer', value: 'software_developer' },
+    { label: 'Web Developer', value: 'web_developer' },
+    { label: 'Mobile App Developer', value: 'mobile_app_developer' },
+    { label: 'Data Scientist', value: 'data_scientist' },
+    { label: 'Data Analyst', value: 'data_analyst' },
+    { label: 'IT Professional', value: 'it_professional' },
+    { label: 'Network Engineer', value: 'network_engineer' },
+    { label: 'Civil Engineer', value: 'civil_engineer' },
+    { label: 'Mechanical Engineer', value: 'mechanical_engineer' },
+    { label: 'Electrical Engineer', value: 'electrical_engineer' },
+    { label: 'Electronics Engineer', value: 'electronics_engineer' },
+    { label: 'Architect', value: 'architect' },
+    { label: 'Other Engineer', value: 'other_engineer' },
+    { label: 'Finance & Accounting', value: 'header_finance', isHeader: true },
+    { label: 'Chartered Accountant (CA)', value: 'ca' },
+    { label: 'Accountant', value: 'accountant' },
+    { label: 'Financial Analyst', value: 'financial_analyst' },
+    { label: 'Banker', value: 'banker' },
+    { label: 'Investment Professional', value: 'investment_professional' },
+    { label: 'Insurance Professional', value: 'insurance_professional' },
+    { label: 'Other Finance Professional', value: 'other_finance' },
+    { label: 'Business', value: 'header_business', isHeader: true },
+    { label: 'Business Owner', value: 'business_owner' },
+    { label: 'Entrepreneur', value: 'entrepreneur' },
+    { label: 'Self-Employed', value: 'self_employed' },
+    { label: 'Trader', value: 'trader' },
+    { label: 'Consultant', value: 'consultant' },
+    { label: 'Freelancer', value: 'freelancer' },
+    { label: 'Government & Public Sector', value: 'header_government', isHeader: true },
+    { label: 'Government Employee', value: 'government_employee' },
+    { label: 'Civil Services', value: 'civil_services' },
+    { label: 'Police Officer', value: 'police_officer' },
+    { label: 'Defence / Armed Forces', value: 'defence' },
+    { label: 'Public Sector Employee', value: 'public_sector' },
+    { label: 'Education', value: 'header_education', isHeader: true },
+    { label: 'Teacher', value: 'teacher' },
+    { label: 'Professor / Lecturer', value: 'professor' },
+    { label: 'School Principal', value: 'principal' },
+    { label: 'Education Professional', value: 'education_professional' },
+    { label: 'Legal', value: 'header_legal', isHeader: true },
+    { label: 'Lawyer / Advocate', value: 'lawyer' },
+    { label: 'Legal Professional', value: 'legal_professional' },
+    { label: 'Corporate & Management', value: 'header_corporate', isHeader: true },
+    { label: 'Manager', value: 'manager' },
+    { label: 'HR Professional', value: 'hr_professional' },
+    { label: 'Marketing Professional', value: 'marketing_professional' },
+    { label: 'Sales Professional', value: 'sales_professional' },
+    { label: 'Operations Professional', value: 'operations_professional' },
+    { label: 'Business Analyst', value: 'business_analyst' },
+    { label: 'Project Manager', value: 'project_manager' },
+    { label: 'Media & Creative', value: 'header_media', isHeader: true },
+    { label: 'Graphic Designer', value: 'graphic_designer' },
+    { label: 'UI/UX Designer', value: 'ui_ux_designer' },
+    { label: 'Photographer', value: 'photographer' },
+    { label: 'Writer', value: 'writer' },
+    { label: 'Journalist', value: 'journalist' },
+    { label: 'Content Creator', value: 'content_creator' },
+    { label: 'Actor / Performer', value: 'actor' },
+    { label: 'Artist', value: 'artist' },
+    { label: 'Other Common Occupations', value: 'header_other_occupations', isHeader: true },
+    { label: 'Government Officer', value: 'government_officer' },
+    { label: 'Administrative Professional', value: 'administrative' },
+    { label: 'Scientist / Researcher', value: 'scientist' },
+    { label: 'Social Worker', value: 'social_worker' },
+    { label: 'Pilot', value: 'pilot' },
+    { label: 'Chef', value: 'chef' },
+    { label: 'Hotel / Hospitality Professional', value: 'hospitality' },
+    { label: 'Real Estate Professional', value: 'real_estate' },
+    { label: 'Other', value: 'other_occupation' }
+  ];
+
+  const workingWithOptions = [
     { label: 'Private Company', value: 'private' },
     { label: 'Government / Public Sector', value: 'government' },
     { label: 'Defense / Civil Services', value: 'defense' },
@@ -94,17 +217,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
     { label: 'Not Working', value: 'not_working' }
   ];
 
-  const incomeOptions = language === 'mr' ? [
-    { label: 'उत्पन्न नाही (No Income)', value: '0' },
-    { label: '१ लाखापर्यंत (Upto 1 Lakh)', value: '1' },
-    { label: '१ ते ३ लाख (1 to 3 Lakhs)', value: '3' },
-    { label: '३ ते ५ लाख (3 to 5 Lakhs)', value: '5' },
-    { label: '५ ते ७ लाख (5 to 7 Lakhs)', value: '7' },
-    { label: '७ ते १० लाख (7 to 10 Lakhs)', value: '10' },
-    { label: '१० ते १५ लाख (10 to 15 Lakhs)', value: '15' },
-    { label: '१५ ते २० लाख (15 to 20 Lakhs)', value: '20' },
-    { label: '२०+ लाख (20+ Lakhs)', value: '20+' }
-  ] : [
+  const incomeOptions = [
     { label: 'No Income', value: '0' },
     { label: 'Upto 1 Lakh', value: '1' },
     { label: '1 to 3 Lakhs', value: '3' },
@@ -116,28 +229,30 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
     { label: '20+ Lakhs', value: '20+' }
   ];
 
-  const handleNext = () => {
-    let newErrors: any = {};
-    if (!educationLevel) newErrors.educationLevel = true;
-    if (!educationField) newErrors.educationField = true;
-    if (!workingWith) newErrors.workingWith = true;
-    if (!occupation && workingWith !== 'not_working') newErrors.occupation = true;
-    if (!annualIncome) newErrors.annualIncome = true;
-    
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0) {
-      Alert.alert(t('requiredFields'), t('pleaseFillRequired'));
-      return;
+  const filteredOccupationOptions = occupationOptions.filter(opt => {
+    if (!occupationSearch.trim()) return true;
+    if (opt.isHeader) {
+      const headerIndex = occupationOptions.indexOf(opt);
+      for (let i = headerIndex + 1; i < occupationOptions.length; i++) {
+        if (occupationOptions[i].isHeader) break;
+        if (occupationOptions[i].label.toLowerCase().includes(occupationSearch.toLowerCase())) {
+          return true;
+        }
+      }
+      return false;
     }
+    return opt.label.toLowerCase().includes(occupationSearch.toLowerCase());
+  });
 
+  const handleNext = () => {
     const step3Data = {
       ...previousData,
-      educationLevel,
-      educationField,
-      workingWith,
-      occupation,
-      annualIncome
+      educationLevel: educationLevel || 'btech',
+      educationField: educationField || 'engineering',
+      workingWith: workingWith || 'private',
+      occupation: occupation || 'software_developer',
+      annualIncome: annualIncome || '10',
+      about: about || ''
     };
 
     console.log('Step 3 Data:', step3Data);
@@ -150,8 +265,8 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
       <Appbar.Header style={{ backgroundColor: primaryColor, elevation: 0 }}>
         <Appbar.BackAction color="#ffffff" onPress={() => navigation.goBack()} />
         <Appbar.Content 
-          title={t('step3Title')} 
-          subtitle={t('step3Subtitle')}
+          title="Education & Career" 
+          subtitle="Step 3 of 4"
           titleStyle={{ color: '#ffffff', fontSize: 18, fontWeight: '600' }} 
           subtitleStyle={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}
         />
@@ -170,54 +285,64 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView 
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 + insets.bottom }}
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: Platform.OS === 'android' ? (keyboardHeight > 0 ? keyboardHeight + 80 : 40 + insets.bottom) : (keyboardHeight > 0 ? 80 : 40 + insets.bottom)
+          }}
+          showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
           <View style={{ paddingHorizontal: 20, paddingTop: 16 }}>
             <View style={styles.card}>
             
               <DropdownInput 
-                label={`${t('educationLevel')} *`} 
+                label="Education Level *" 
                 value={eduLevelOptions.find(o => o.value === educationLevel)?.label || ''}
                 onPress={() => setEduLevelVisible(true)} 
                 error={errors.educationLevel}
               />
 
               <DropdownInput 
-                label={`${t('educationField')} *`} 
+                label="Education Field *" 
                 value={eduFieldOptions.find(o => o.value === educationField)?.label || ''}
                 onPress={() => setEduFieldVisible(true)} 
                 error={errors.educationField}
               />
 
               <DropdownInput 
-                label={`${t('workingWith')} *`} 
+                label="Working With *" 
                 value={workingWithOptions.find(o => o.value === workingWith)?.label || ''}
                 onPress={() => setWorkingWithVisible(true)} 
                 error={errors.workingWith}
               />
 
               {workingWith !== 'not_working' && (
-                <TextInput
-                  label={`${t('occupation')} *`}
-                  value={occupation}
-                  onChangeText={(text) => {
-                    setOccupation(text);
-                    setErrors({...errors, occupation: false});
-                  }}
-                  mode="outlined"
-                  style={styles.input}
-                  outlineStyle={[styles.inputOutline, errors.occupation ? { borderColor: 'red' } : undefined]}
-                  theme={{ colors: { primary: primaryColor } }}
-                  placeholder={t('occupationPlaceholder')}
+                <DropdownInput 
+                  label="Occupation / Designation *" 
+                  value={occupationOptions.find(o => o.value === occupation)?.label || occupation || ''}
+                  onPress={() => setOccupationVisible(true)} 
+                  error={errors.occupation}
                 />
               )}
 
               <DropdownInput 
-                label={`${t('annualIncome')} *`} 
+                label="Annual Income *" 
                 value={incomeOptions.find(o => o.value === annualIncome)?.label || ''}
                 onPress={() => setIncomeVisible(true)} 
                 error={errors.annualIncome}
+              />
+
+              <TextInput
+                label="Your about or Expectation"
+                value={about}
+                onChangeText={setAbout}
+                mode="outlined"
+                multiline={true}
+                numberOfLines={4}
+                style={[styles.input, { height: 100 }]}
+                outlineStyle={[styles.inputOutline, errors.about ? { borderColor: 'red' } : undefined]}
+                theme={{ colors: { primary: primaryColor } }}
               />
 
               <Button 
@@ -227,7 +352,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
                 contentStyle={styles.submitButtonContent}
                 labelStyle={styles.submitButtonText}
               >
-                {t('next')}
+                {t('next') || 'Next'}
               </Button>
 
             </View>
@@ -237,27 +362,65 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
 
       <Portal>
         {/* Education Level Dialog */}
-        <Dialog visible={eduLevelVisible} onDismiss={() => setEduLevelVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
-          <Dialog.Title style={styles.dialogTitle}>{t('selectEduLevel')}</Dialog.Title>
+        <Dialog 
+          visible={eduLevelVisible} 
+          onDismiss={() => setEduLevelVisible(false)} 
+          style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
+        >
+          <Dialog.Title style={styles.dialogTitle}>Education Level</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
-            <ScrollView>
-              <RadioButton.Group onValueChange={val => { setEducationLevel(val); setEduLevelVisible(false); setErrors({...errors, educationLevel: false}); }} value={educationLevel}>
-                {eduLevelOptions.map(opt => (
-                  <RadioButton.Item key={opt.value} label={opt.label} value={opt.value} color={primaryColor} labelStyle={styles.radioLabel} />
-                ))}
+            <ScrollView showsVerticalScrollIndicator={true}>
+              <RadioButton.Group 
+                onValueChange={val => { 
+                  setEducationLevel(val); 
+                  setEduLevelVisible(false); 
+                  setErrors({...errors, educationLevel: false}); 
+                }} 
+                value={educationLevel}
+              >
+                {eduLevelOptions.map(opt => 
+                  opt.isHeader ? (
+                    <Text key={opt.value} style={{ fontWeight: 'bold', fontSize: 14, color: primaryColor, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 4 }}>{opt.label}</Text>
+                  ) : (
+                    <RadioButton.Item 
+                      key={opt.value} 
+                      label={opt.label} 
+                      value={opt.value} 
+                      color={primaryColor} 
+                      labelStyle={styles.radioLabel} 
+                    />
+                  )
+                )}
               </RadioButton.Group>
             </ScrollView>
           </Dialog.ScrollArea>
         </Dialog>
 
         {/* Education Field Dialog */}
-        <Dialog visible={eduFieldVisible} onDismiss={() => setEduFieldVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
-          <Dialog.Title style={styles.dialogTitle}>{t('selectEduField')}</Dialog.Title>
+        <Dialog 
+          visible={eduFieldVisible} 
+          onDismiss={() => setEduFieldVisible(false)} 
+          style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
+        >
+          <Dialog.Title style={styles.dialogTitle}>Education Field</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
-            <ScrollView>
-              <RadioButton.Group onValueChange={val => { setEducationField(val); setEduFieldVisible(false); setErrors({...errors, educationField: false}); }} value={educationField}>
+            <ScrollView showsVerticalScrollIndicator={true}>
+              <RadioButton.Group 
+                onValueChange={val => { 
+                  setEducationField(val); 
+                  setEduFieldVisible(false); 
+                  setErrors({...errors, educationField: false}); 
+                }} 
+                value={educationField}
+              >
                 {eduFieldOptions.map(opt => (
-                  <RadioButton.Item key={opt.value} label={opt.label} value={opt.value} color={primaryColor} labelStyle={styles.radioLabel} />
+                  <RadioButton.Item 
+                    key={opt.value} 
+                    label={opt.label} 
+                    value={opt.value} 
+                    color={primaryColor} 
+                    labelStyle={styles.radioLabel} 
+                  />
                 ))}
               </RadioButton.Group>
             </ScrollView>
@@ -265,27 +428,110 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
         </Dialog>
 
         {/* Working With Dialog */}
-        <Dialog visible={workingWithVisible} onDismiss={() => setWorkingWithVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
-          <Dialog.Title style={styles.dialogTitle}>{t('selectWorkingWith')}</Dialog.Title>
+        <Dialog 
+          visible={workingWithVisible} 
+          onDismiss={() => setWorkingWithVisible(false)} 
+          style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
+        >
+          <Dialog.Title style={styles.dialogTitle}>Working With</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
-            <ScrollView>
-              <RadioButton.Group onValueChange={val => { setWorkingWith(val); setWorkingWithVisible(false); setErrors({...errors, workingWith: false}); }} value={workingWith}>
+            <ScrollView showsVerticalScrollIndicator={true}>
+              <RadioButton.Group 
+                onValueChange={val => { 
+                  setWorkingWith(val); 
+                  setWorkingWithVisible(false); 
+                  setErrors({...errors, workingWith: false}); 
+                }} 
+                value={workingWith}
+              >
                 {workingWithOptions.map(opt => (
-                  <RadioButton.Item key={opt.value} label={opt.label} value={opt.value} color={primaryColor} labelStyle={styles.radioLabel} />
+                  <RadioButton.Item 
+                    key={opt.value} 
+                    label={opt.label} 
+                    value={opt.value} 
+                    color={primaryColor} 
+                    labelStyle={styles.radioLabel} 
+                  />
                 ))}
               </RadioButton.Group>
             </ScrollView>
           </Dialog.ScrollArea>
         </Dialog>
 
-        {/* Annual Income Dialog */}
-        <Dialog visible={incomeVisible} onDismiss={() => setIncomeVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
-          <Dialog.Title style={styles.dialogTitle}>{t('selectIncome')}</Dialog.Title>
+        {/* Occupation Dialog */}
+        <Dialog 
+          visible={occupationVisible} 
+          onDismiss={() => { setOccupationVisible(false); setOccupationSearch(''); }} 
+          style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
+        >
+          <Dialog.Title style={styles.dialogTitle}>Occupation / Designation</Dialog.Title>
+          <View style={{ paddingHorizontal: 16, paddingTop: 6, paddingBottom: 6 }}>
+            <TextInput
+              mode="outlined"
+              placeholder="Search occupation..."
+              value={occupationSearch}
+              onChangeText={setOccupationSearch}
+              style={{ height: 44, backgroundColor: '#ffffff', fontSize: 14 }}
+              outlineStyle={{ borderRadius: 8, borderColor: '#d0d0d0' }}
+              left={<TextInput.Icon icon="magnify" color="#888" />}
+              right={occupationSearch ? <TextInput.Icon icon="close" onPress={() => setOccupationSearch('')} /> : undefined}
+              theme={{ colors: { primary: primaryColor } }}
+            />
+          </View>
           <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
-            <ScrollView>
-              <RadioButton.Group onValueChange={val => { setAnnualIncome(val); setIncomeVisible(false); setErrors({...errors, annualIncome: false}); }} value={annualIncome}>
+            <ScrollView showsVerticalScrollIndicator={true} keyboardShouldPersistTaps="handled">
+              <RadioButton.Group 
+                onValueChange={val => { 
+                  setOccupation(val); 
+                  setOccupationVisible(false); 
+                  setOccupationSearch('');
+                  setErrors({...errors, occupation: false}); 
+                }} 
+                value={occupation}
+              >
+                {filteredOccupationOptions.map(opt => 
+                  opt.isHeader ? (
+                    <Text key={opt.value} style={{ fontWeight: 'bold', fontSize: 14, color: primaryColor, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 4 }}>{opt.label}</Text>
+                  ) : (
+                    <RadioButton.Item 
+                      key={opt.value} 
+                      label={opt.label} 
+                      value={opt.value} 
+                      color={primaryColor} 
+                      labelStyle={styles.radioLabel} 
+                    />
+                  )
+                )}
+              </RadioButton.Group>
+            </ScrollView>
+          </Dialog.ScrollArea>
+        </Dialog>
+
+        {/* Annual Income Dialog */}
+        <Dialog 
+          visible={incomeVisible} 
+          onDismiss={() => setIncomeVisible(false)} 
+          style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
+        >
+          <Dialog.Title style={styles.dialogTitle}>Annual Income</Dialog.Title>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
+            <ScrollView showsVerticalScrollIndicator={true}>
+              <RadioButton.Group 
+                onValueChange={val => { 
+                  setAnnualIncome(val); 
+                  setIncomeVisible(false); 
+                  setErrors({...errors, annualIncome: false}); 
+                }} 
+                value={annualIncome}
+              >
                 {incomeOptions.map(opt => (
-                  <RadioButton.Item key={opt.value} label={opt.label} value={opt.value} color={primaryColor} labelStyle={styles.radioLabel} />
+                  <RadioButton.Item 
+                    key={opt.value} 
+                    label={opt.label} 
+                    value={opt.value} 
+                    color={primaryColor} 
+                    labelStyle={styles.radioLabel} 
+                  />
                 ))}
               </RadioButton.Group>
             </ScrollView>
@@ -346,4 +592,3 @@ const styles = StyleSheet.create({
 });
 
 export default RegistrationStep3Screen;
-

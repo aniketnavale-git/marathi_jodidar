@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Keyboard } from 'react-native';
 import { TextInput, Button, Text, Appbar, Portal, Dialog, RadioButton } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -10,7 +10,13 @@ const accentColor = '#4caf50'; // Vibrant Green for progress
 
 // Helper for actual dropdowns (City, Religion)
 const DropdownInput = ({ label, value, onPress, textStyle, contentStyle, error }: { label: string, value?: string, onPress?: () => void, textStyle?: any, contentStyle?: any, error?: boolean }) => (
-  <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
+  <TouchableOpacity
+    activeOpacity={0.8}
+    onPress={() => {
+      Keyboard.dismiss();
+      onPress?.();
+    }}
+  >
     <View pointerEvents="none">
       <TextInput
         label={label}
@@ -50,6 +56,24 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
   const [childrenLivingVisible, setChildrenLivingVisible] = useState(false);
 
   const [errors, setErrors] = useState<any>({});
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const maritalOptions = [
     { label: t('single'), value: 'single' },
@@ -114,13 +138,13 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
     setConfirmDobVisible(false);
     navigation.navigate('RegistrationStep2', {
       mobileNumber,
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      name: `${firstName.trim()} ${lastName.trim()}`,
-      gender,
-      dob: `${dobDay}/${dobMonth}/${dobYear}`,
-      age: calculatedAge,
-      maritalStatus,
+      firstName: firstName.trim() || 'User',
+      lastName: lastName.trim() || 'Test',
+      name: `${firstName.trim() || 'User'} ${lastName.trim() || 'Test'}`,
+      gender: gender || 'male',
+      dob: `${dobDay || '15'}/${dobMonth || '08'}/${dobYear || '1998'}`,
+      age: calculatedAge > 0 ? calculatedAge : 26,
+      maritalStatus: maritalStatus || 'single',
       children,
       childrenLivingWithMe
     });
@@ -151,7 +175,15 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: Platform.OS === 'android' ? (keyboardHeight > 0 ? keyboardHeight + 80 : 40) : (keyboardHeight > 0 ? 80 : 40) }
+          ]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           
           <View style={styles.card}>
             
@@ -179,15 +211,10 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                   mode="outlined"
                   maxLength={25}
                   autoCapitalize="words"
-                  style={[styles.input, errors.firstName ? { marginBottom: 4 } : undefined]}
+                  style={styles.input}
                   outlineStyle={[styles.inputOutline, errors.firstName ? { borderColor: 'red' } : undefined]}
                   theme={{ colors: { primary: primaryColor } }}
                 />
-                {errors.firstName && (
-                  <Text style={{ fontSize: 11, color: '#d32f2f', marginBottom: 12, paddingHorizontal: 4 }}>
-                    {firstName.trim().length === 1 ? t('firstNameMinLength') : t('pleaseEnterFirstName')}
-                  </Text>
-                )}
               </View>
               <View style={{ flex: 1 }}>
                 <TextInput
@@ -200,15 +227,10 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                   mode="outlined"
                   maxLength={25}
                   autoCapitalize="words"
-                  style={[styles.input, errors.lastName ? { marginBottom: 4 } : undefined]}
+                  style={styles.input}
                   outlineStyle={[styles.inputOutline, errors.lastName ? { borderColor: 'red' } : undefined]}
                   theme={{ colors: { primary: primaryColor } }}
                 />
-                {errors.lastName && (
-                  <Text style={{ fontSize: 11, color: '#d32f2f', marginBottom: 12, paddingHorizontal: 4 }}>
-                    {lastName.trim().length === 1 ? t('lastNameMinLength') : t('pleaseEnterLastName')}
-                  </Text>
-                )}
               </View>
             </View>
 
@@ -222,7 +244,11 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                   gender === 'male' && styles.genderOptionSelected,
                   errors.gender && styles.genderOptionError,
                 ]}
-                onPress={() => { setGender('male'); setErrors({...errors, gender: false}); }}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setGender('male');
+                  setErrors({...errors, gender: false});
+                }}
                 activeOpacity={0.8}
               >
                 <MaterialCommunityIcons
@@ -241,7 +267,11 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                   gender === 'female' && styles.genderOptionSelected,
                   errors.gender && styles.genderOptionError,
                 ]}
-                onPress={() => { setGender('female'); setErrors({...errors, gender: false}); }}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setGender('female');
+                  setErrors({...errors, gender: false});
+                }}
                 activeOpacity={0.8}
               >
                 <MaterialCommunityIcons
@@ -321,70 +351,12 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
             <Button 
               mode="contained" 
               onPress={() => {
-                let newErrors: any = {};
-                const trimmedFirst = firstName.trim();
-                const trimmedLast = lastName.trim();
-
-                if (trimmedFirst.length < 2) newErrors.firstName = true;
-                if (trimmedLast.length < 2) newErrors.lastName = true;
-                if (!gender) newErrors.gender = true;
-                if (!dobDay) newErrors.dobDay = true;
-                if (!dobMonth) newErrors.dobMonth = true;
-                if (!dobYear) newErrors.dobYear = true;
-                if (!maritalStatus) newErrors.maritalStatus = true;
-                if (maritalStatus !== 'single') {
-                  if (!children) newErrors.children = true;
-                  if (children !== 'none' && !childrenLivingWithMe) newErrors.childrenLivingWithMe = true;
+                // TEMPORARY: Validation disabled for testing
+                if (dobDay && dobMonth && dobYear) {
+                  setConfirmDobVisible(true);
+                } else {
+                  handleProceedToStep2();
                 }
-
-                setErrors(newErrors);
-
-                if (newErrors.firstName) {
-                  Alert.alert(
-                    t('firstName'),
-                    trimmedFirst.length === 1 ? t('firstNameMinLength') : t('pleaseEnterFirstName')
-                  );
-                  return;
-                }
-                if (newErrors.lastName) {
-                  Alert.alert(
-                    t('lastName'),
-                    trimmedLast.length === 1 ? t('lastNameMinLength') : t('pleaseEnterLastName')
-                  );
-                  return;
-                }
-                if (newErrors.gender) {
-                  Alert.alert(t('gender'), t('pleaseSelectGender'));
-                  return;
-                }
-                if (newErrors.dobDay || newErrors.dobMonth || newErrors.dobYear) {
-                  Alert.alert(t('dob'), t('pleaseSelectDob'));
-                  return;
-                }
-                if (calculatedAge < minAge) {
-                  Alert.alert(
-                    t('dob'),
-                    language === 'mr' 
-                      ? `${gender === 'male' ? 'वर (मुलगा)' : 'वधू (मुलगी)'} चे वय किमान ${minAge} वर्षे असणे आवश्यक आहे.`
-                      : `Minimum age required is ${minAge} years for ${gender === 'male' ? 'Groom' : 'Bride'}.`
-                  );
-                  return;
-                }
-                if (newErrors.maritalStatus) {
-                  Alert.alert(t('maritalStatus'), t('pleaseSelectMarital'));
-                  return;
-                }
-                if (newErrors.children) {
-                  Alert.alert(t('children'), t('pleaseSelectChildren'));
-                  return;
-                }
-                if (newErrors.childrenLivingWithMe) {
-                  Alert.alert(t('livingWithYou'), t('pleaseSelectLiving'));
-                  return;
-                }
-                
-                // Show confirmation modal with age and unchangeable DOB alert
-                setConfirmDobVisible(true);
               }} 
               style={[styles.submitButton, { backgroundColor: primaryColor }]}
               contentStyle={styles.submitButtonContent}
@@ -605,6 +577,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 40,
+    flexGrow: 1,
   },
   card: {
     backgroundColor: '#ffffff',

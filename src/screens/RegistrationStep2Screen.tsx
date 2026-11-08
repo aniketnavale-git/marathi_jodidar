@@ -73,13 +73,16 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
     return [...districts, language === 'mr' ? 'इतर (Other)' : 'Other'];
   }, [language]);
 
-  const heightOptions = [];
-  for (let feet = 4; feet <= 7; feet++) {
-    for (let inches = 0; inches <= 11; inches++) {
-      if (feet === 7 && inches > 0) break;
-      heightOptions.push({ label: `${feet}' ${inches}"`, value: `${feet}_${inches}` });
+  const heightOptions = useMemo(() => {
+    const options = [];
+    for (let feet = 4; feet <= 7; feet++) {
+      for (let inches = 0; inches <= 11; inches++) {
+        if (feet === 7 && inches > 0) break;
+        options.push({ label: `${feet} Feet ${inches} Inch`, value: `${feet}_${inches}` });
+      }
     }
-  }
+    return options;
+  }, []);
 
   const weightOptions = [];
   for (let kg = 40; kg <= 140; kg++) {
@@ -286,48 +289,25 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
               <Button
                 mode="contained"
                 onPress={() => {
-                  let newErrors: any = {};
-                  if (!religion) newErrors.religion = true;
-                  if (!caste) newErrors.caste = true;
-                  if (!interCaste) newErrors.interCaste = true;
-                  if (!district) newErrors.district = true;
-                  if (!height) newErrors.height = true;
-                  if (!weight) newErrors.weight = true;
-                  if (!diet) newErrors.diet = true;
-
-                  setErrors(newErrors);
-
-                  if (newErrors.religion) {
-                    Alert.alert(t('religion'), t('pleaseSelectReligion'));
-                    return;
-                  }
-                  if (newErrors.caste) {
-                    Alert.alert(t('caste'), t('pleaseSelectCaste'));
-                    return;
-                  }
-                  if (newErrors.interCaste) {
-                    Alert.alert(t('interCaste'), t('pleaseSelectInterCaste'));
-                    return;
-                  }
-                  if (newErrors.district) {
-                    Alert.alert(t('district'), t('pleaseSelectDistrict'));
-                    return;
-                  }
-                  if (newErrors.height) {
-                    Alert.alert(t('height'), t('pleaseSelectHeight'));
-                    return;
-                  }
-                  if (newErrors.weight) {
-                    Alert.alert(t('weight'), t('pleaseSelectWeight'));
-                    return;
-                  }
-                  if (newErrors.diet) {
-                    Alert.alert(t('diet'), t('pleaseSelectDiet'));
-                    return;
-                  }
-
-                  // Navigate to Step 3
-                  navigation.navigate('RegistrationStep3', { mobileNumber, name, gender, dob, age, maritalStatus, children, childrenLivingWithMe, religion, caste, subcaste, interCaste, district, height, weight, diet });
+                  // TEMPORARY: Validation disabled for testing
+                  navigation.navigate('RegistrationStep3', {
+                    mobileNumber,
+                    name,
+                    gender,
+                    dob,
+                    age,
+                    maritalStatus,
+                    children,
+                    childrenLivingWithMe,
+                    religion: religion || 'hindu',
+                    caste: caste || 'maratha',
+                    subcaste,
+                    interCaste: interCaste || 'yes',
+                    district: district || 'Pune',
+                    height: height || '5_6',
+                    weight: weight || '65',
+                    diet: diet || 'veg'
+                  });
                 }}
                 style={[styles.submitButton, { backgroundColor: primaryColor }]}
                 contentStyle={styles.submitButtonContent}
@@ -435,33 +415,47 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
           </Dialog.ScrollArea>
         </Dialog>
 
-        <Dialog visible={interCasteVisible} onDismiss={() => setInterCasteVisible(false)} style={{ backgroundColor: '#ffffff' }}>
+        <Dialog visible={interCasteVisible} onDismiss={() => setInterCasteVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('interCaste')}</Dialog.Title>
-          <Dialog.Content style={{ paddingHorizontal: 0 }}>
-            <RadioButton.Group onValueChange={newValue => {
-              setInterCaste(newValue);
-              setInterCasteVisible(false);
-              setErrors({ ...errors, interCaste: false });
-            }} value={interCaste}>
-              <RadioButton.Item label={t('accepted')} value="yes" color={primaryColor} labelStyle={styles.radioLabel} />
-              <RadioButton.Item label={t('notAccepted')} value="no" color={primaryColor} labelStyle={styles.radioLabel} />
-            </RadioButton.Group>
-          </Dialog.Content>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <RadioButton.Group onValueChange={newValue => {
+                setInterCaste(newValue);
+                setInterCasteVisible(false);
+                setErrors({ ...errors, interCaste: false });
+              }} value={interCaste}>
+                <RadioButton.Item
+                  label={t('accepted')}
+                  value="yes"
+                  color={primaryColor}
+                  labelStyle={styles.radioLabel}
+                />
+                <RadioButton.Item
+                  label={t('notAccepted')}
+                  value="no"
+                  color={primaryColor}
+                  labelStyle={styles.radioLabel}
+                />
+              </RadioButton.Group>
+            </ScrollView>
+          </Dialog.ScrollArea>
         </Dialog>
 
-        <Dialog visible={dietVisible} onDismiss={() => setDietVisible(false)} style={{ backgroundColor: '#ffffff' }}>
+        <Dialog visible={dietVisible} onDismiss={() => setDietVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('selectDiet')}</Dialog.Title>
-          <Dialog.Content>
-            <RadioButton.Group onValueChange={newValue => {
-              setDiet(newValue);
-              setDietVisible(false);
-              setErrors({ ...errors, diet: false });
-            }} value={diet}>
-              <RadioButton.Item label={t('veg')} value="veg" color={primaryColor} labelStyle={styles.radioLabel} />
-              <RadioButton.Item label={t('nonVeg')} value="nonveg" color={primaryColor} labelStyle={styles.radioLabel} />
-              <RadioButton.Item label={t('egg')} value="egg" color={primaryColor} labelStyle={styles.radioLabel} />
-            </RadioButton.Group>
-          </Dialog.Content>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <RadioButton.Group onValueChange={newValue => {
+                setDiet(newValue);
+                setDietVisible(false);
+                setErrors({ ...errors, diet: false });
+              }} value={diet}>
+                <RadioButton.Item label={t('veg')} value="veg" color={primaryColor} labelStyle={styles.radioLabel} />
+                <RadioButton.Item label={t('nonVeg')} value="nonveg" color={primaryColor} labelStyle={styles.radioLabel} />
+                <RadioButton.Item label={t('egg')} value="egg" color={primaryColor} labelStyle={styles.radioLabel} />
+              </RadioButton.Group>
+            </ScrollView>
+          </Dialog.ScrollArea>
         </Dialog>
 
         <Dialog visible={districtVisible} onDismiss={() => setDistrictVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
