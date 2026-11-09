@@ -166,6 +166,8 @@ const translations: Record<Language, Record<string, string>> = {
     addPhotoTitle: 'प्रोफाइल फोटो जोडा',
     addPhotoSub: 'फोटो असलेल्या प्रोफाइल्सना जास्त प्रतिसाद मिळतो!',
     tapToUpload: 'फोटो अपलोड करण्यासाठी टॅप करा',
+    selectPhoto: 'फोटो निवडा',
+    skip: 'वगळा',
     finishRegistration: 'नोंदणी पूर्ण करा',
     skipForNow: 'सध्या वगळा (Skip)',
     regSuccess: 'तुमची नोंदणी यशस्वीरीत्या पूर्ण झाली!',
@@ -188,9 +190,15 @@ const translations: Record<Language, Record<string, string>> = {
 
     // Interests / Matches
     matchesTitle: 'माझे इंटरेस्टस् आणि मॅचेस',
+    matchesSub: 'तुम्ही रस दाखवलेले आणि पसंत केलेले प्रोफाइल्स',
     sentInterests: 'पाठवलेले इंटरेस्ट',
     shortlisted: 'शॉर्टलिस्टेड',
     waitingResponse: 'प्रतिसादाची वाट पाहत आहे',
+    shortlistedProfile: 'शॉर्टलिस्टेड प्रोफाइल',
+    noSentInterests: 'कोणतीही विनंती पाठवली नाही',
+    noShortlisted: 'कोणतीही प्रोफाइल शॉर्टलिस्ट केली नाही',
+    emptyMatchesSub: 'होम स्क्रीनवर जाऊन आवडत्या प्रोफाइल्सना रस दाखवा किंवा हार्ट आयकॉनवर टॅप करून शॉर्टलिस्ट करा.',
+    exploreProfiles: 'प्रोफाइल्स शोधा',
 
     // Profile
     profileViews: 'प्रोफाइल व्ह्यूज',
@@ -357,6 +365,8 @@ const translations: Record<Language, Record<string, string>> = {
     addPhotoTitle: 'Add a Profile Photo',
     addPhotoSub: 'Profiles with photos get more attention & responses!',
     tapToUpload: 'Tap to upload photo',
+    selectPhoto: 'Select Photo',
+    skip: 'Skip',
     finishRegistration: 'Finish Registration',
     skipForNow: 'Skip for now',
     regSuccess: 'Your registration is complete!',
@@ -379,9 +389,15 @@ const translations: Record<Language, Record<string, string>> = {
 
     // Interests / Matches
     matchesTitle: 'My Interests & Matches',
+    matchesSub: 'Profiles you showed interest in or shortlisted',
     sentInterests: 'Sent Interests',
     shortlisted: 'Shortlisted',
     waitingResponse: 'Awaiting Response',
+    shortlistedProfile: 'Shortlisted Profile',
+    noSentInterests: 'No requests sent yet',
+    noShortlisted: 'No profiles shortlisted yet',
+    emptyMatchesSub: 'Visit home screen to show interest or tap heart icon to shortlist.',
+    exploreProfiles: 'Explore Profiles',
 
     // Profile
     profileViews: 'Profile Views',

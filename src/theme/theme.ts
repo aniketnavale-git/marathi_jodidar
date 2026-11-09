@@ -1,10 +1,14 @@
 import { MD3LightTheme as DefaultTheme } from 'react-native-paper';
 
+export const primaryColor = '#901c60';
+export const accentColor = '#4caf50'; // Vibrant Green for progress
+export const screenBackground = '#f4f4f6'; // Standard App Background
+
 export const theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#874086', // Extracted from logo
+    primary: primaryColor,
     onPrimary: '#FFFFFF',
     primaryContainer: '#FFCC80',
     onPrimaryContainer: '#4E1800',

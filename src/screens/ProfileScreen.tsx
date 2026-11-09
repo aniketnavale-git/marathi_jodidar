@@ -5,8 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-
-const primaryColor = '#901c60';
+import { primaryColor } from '../theme/theme';
 
 export const ProfileScreen = ({ navigation }: any) => {
   const { logout, currentUserPhone } = useAuth();

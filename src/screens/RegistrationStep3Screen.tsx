@@ -4,9 +4,7 @@ import { TextInput, Button, Appbar, Portal, Dialog, RadioButton, Text } from 're
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../context/LanguageContext';
-
-const primaryColor = '#901c60';
-const accentColor = '#4caf50';
+import { primaryColor, accentColor } from '../theme/theme';
 
 const DropdownInput = ({ label, value, onPress, error }: { label: string, value?: string, onPress?: () => void, error?: boolean }) => (
   <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
@@ -32,9 +30,6 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
 
   const [educationLevel, setEducationLevel] = useState('');
   const [eduLevelVisible, setEduLevelVisible] = useState(false);
-
-  const [educationField, setEducationField] = useState('');
-  const [eduFieldVisible, setEduFieldVisible] = useState(false);
 
   const [workingWith, setWorkingWith] = useState('');
   const [workingWithVisible, setWorkingWithVisible] = useState(false);
@@ -112,17 +107,6 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
     { label: 'Not specified', value: 'header_not_specified', isHeader: true },
     { label: 'Other', value: 'other' },
     { label: 'Prefer not to say', value: 'prefer_not_to_say' }
-  ];
-
-  const eduFieldOptions = [
-    { label: 'Engineering / Technology', value: 'engineering' },
-    { label: 'Medical / Healthcare', value: 'medical' },
-    { label: 'Arts / Design', value: 'arts' },
-    { label: 'Commerce / Finance', value: 'commerce' },
-    { label: 'Science', value: 'science' },
-    { label: 'Management', value: 'management' },
-    { label: 'Law', value: 'law' },
-    { label: 'Other', value: 'other' }
   ];
 
   const occupationOptions = [
@@ -248,7 +232,6 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
     const step3Data = {
       ...previousData,
       educationLevel: educationLevel || 'btech',
-      educationField: educationField || 'engineering',
       workingWith: workingWith || 'private',
       occupation: occupation || 'software_developer',
       annualIncome: annualIncome || '10',
@@ -265,10 +248,12 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
       <Appbar.Header style={{ backgroundColor: primaryColor, elevation: 0 }}>
         <Appbar.BackAction color="#ffffff" onPress={() => navigation.goBack()} />
         <Appbar.Content 
-          title="Education & Career" 
-          subtitle="Step 3 of 4"
-          titleStyle={{ color: '#ffffff', fontSize: 18, fontWeight: '600' }} 
-          subtitleStyle={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}
+          title={
+            <View>
+              <Text style={{ color: '#ffffff', fontSize: 17, fontWeight: '600' }}>{t('step3Title')}</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>{t('step3Subtitle')}</Text>
+            </View>
+          }
         />
       </Appbar.Header>
 
@@ -297,21 +282,14 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
             <View style={styles.card}>
             
               <DropdownInput 
-                label="Education Level *" 
+                label={`${t('educationLevel')} *`} 
                 value={eduLevelOptions.find(o => o.value === educationLevel)?.label || ''}
                 onPress={() => setEduLevelVisible(true)} 
                 error={errors.educationLevel}
               />
 
               <DropdownInput 
-                label="Education Field *" 
-                value={eduFieldOptions.find(o => o.value === educationField)?.label || ''}
-                onPress={() => setEduFieldVisible(true)} 
-                error={errors.educationField}
-              />
-
-              <DropdownInput 
-                label="Working With *" 
+                label={`${t('workingWith')} *`} 
                 value={workingWithOptions.find(o => o.value === workingWith)?.label || ''}
                 onPress={() => setWorkingWithVisible(true)} 
                 error={errors.workingWith}
@@ -319,7 +297,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
 
               {workingWith !== 'not_working' && (
                 <DropdownInput 
-                  label="Occupation / Designation *" 
+                  label={`${t('occupation')} *`} 
                   value={occupationOptions.find(o => o.value === occupation)?.label || occupation || ''}
                   onPress={() => setOccupationVisible(true)} 
                   error={errors.occupation}
@@ -327,14 +305,14 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
               )}
 
               <DropdownInput 
-                label="Annual Income *" 
+                label={`${t('annualIncome')} *`} 
                 value={incomeOptions.find(o => o.value === annualIncome)?.label || ''}
                 onPress={() => setIncomeVisible(true)} 
                 error={errors.annualIncome}
               />
 
               <TextInput
-                label="Your about or Expectation"
+                label={t('aboutMe')}
                 value={about}
                 onChangeText={setAbout}
                 mode="outlined"
@@ -367,7 +345,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
           onDismiss={() => setEduLevelVisible(false)} 
           style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
         >
-          <Dialog.Title style={styles.dialogTitle}>Education Level</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>{t('selectEduLevel')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group 
@@ -396,44 +374,13 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
           </Dialog.ScrollArea>
         </Dialog>
 
-        {/* Education Field Dialog */}
-        <Dialog 
-          visible={eduFieldVisible} 
-          onDismiss={() => setEduFieldVisible(false)} 
-          style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
-        >
-          <Dialog.Title style={styles.dialogTitle}>Education Field</Dialog.Title>
-          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
-            <ScrollView showsVerticalScrollIndicator={true}>
-              <RadioButton.Group 
-                onValueChange={val => { 
-                  setEducationField(val); 
-                  setEduFieldVisible(false); 
-                  setErrors({...errors, educationField: false}); 
-                }} 
-                value={educationField}
-              >
-                {eduFieldOptions.map(opt => (
-                  <RadioButton.Item 
-                    key={opt.value} 
-                    label={opt.label} 
-                    value={opt.value} 
-                    color={primaryColor} 
-                    labelStyle={styles.radioLabel} 
-                  />
-                ))}
-              </RadioButton.Group>
-            </ScrollView>
-          </Dialog.ScrollArea>
-        </Dialog>
-
         {/* Working With Dialog */}
         <Dialog 
           visible={workingWithVisible} 
           onDismiss={() => setWorkingWithVisible(false)} 
           style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
         >
-          <Dialog.Title style={styles.dialogTitle}>Working With</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>{t('selectWorkingWith')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group 
@@ -464,11 +411,11 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
           onDismiss={() => { setOccupationVisible(false); setOccupationSearch(''); }} 
           style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
         >
-          <Dialog.Title style={styles.dialogTitle}>Occupation / Designation</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>{t('occupation')}</Dialog.Title>
           <View style={{ paddingHorizontal: 16, paddingTop: 6, paddingBottom: 6 }}>
             <TextInput
               mode="outlined"
-              placeholder="Search occupation..."
+              placeholder={t('searchOccupation')}
               value={occupationSearch}
               onChangeText={setOccupationSearch}
               style={{ height: 44, backgroundColor: '#ffffff', fontSize: 14 }}
@@ -513,7 +460,7 @@ export const RegistrationStep3Screen = ({ route, navigation }: any) => {
           onDismiss={() => setIncomeVisible(false)} 
           style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
         >
-          <Dialog.Title style={styles.dialogTitle}>Annual Income</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>{t('selectIncome')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group 
@@ -568,7 +515,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   submitButton: {
-    marginTop: 8,
+    marginTop: 16,
     borderRadius: 8,
     elevation: 3,
   },

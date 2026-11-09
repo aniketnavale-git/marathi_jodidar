@@ -5,18 +5,20 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
-  StatusBar,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInterests } from '../context/InterestsContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Profile } from '../data/dummyData';
+import { primaryColor } from '../theme/theme';
 
-const primaryColor = '#901c60';
 const primaryLight = '#fdf2f7';
 
 export const MatchesScreen = ({ navigation }: any) => {
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<'sent' | 'favorites'>('sent');
   const {
     getSentInterestProfiles,
@@ -66,12 +68,12 @@ export const MatchesScreen = ({ navigation }: any) => {
             {activeTab === 'sent' ? (
               <View style={styles.statusBadgeSent}>
                 <MaterialCommunityIcons name="clock-outline" size={12} color="#ffffff" />
-                <Text style={styles.statusBadgeText}>प्रतिसादाची वाट पाहत आहे</Text>
+                <Text style={styles.statusBadgeText}>{t('waitingResponse')}</Text>
               </View>
             ) : (
               <View style={styles.statusBadgeFav}>
                 <MaterialCommunityIcons name="heart" size={12} color="#ffffff" />
-                <Text style={styles.statusBadgeText}>शॉर्टलिस्टेड प्रोफाइल</Text>
+                <Text style={styles.statusBadgeText}>{t('shortlistedProfile')}</Text>
               </View>
             )}
           </View>
@@ -92,12 +94,12 @@ export const MatchesScreen = ({ navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <StatusBar style="dark" />
 
       {/* Screen Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>माझे इंटरेस्टस् आणि मॅचेस</Text>
-        <Text style={styles.headerSub}>तुम्ही रस दाखवलेले आणि पसंत केलेले प्रोफाइल्स</Text>
+        <Text style={styles.headerTitle}>{t('matchesTitle')}</Text>
+        <Text style={styles.headerSub}>{t('matchesSub')}</Text>
 
         {/* Segment Tabs */}
         <View style={styles.tabContainer}>
@@ -117,7 +119,7 @@ export const MatchesScreen = ({ navigation }: any) => {
                 activeTab === 'sent' ? styles.tabTextActive : styles.tabTextInactive,
               ]}
             >
-              पाठवलेले इंटरेस्ट ({sentProfiles.length})
+              {t('sentInterests')} ({sentProfiles.length})
             </Text>
           </TouchableOpacity>
 
@@ -137,7 +139,7 @@ export const MatchesScreen = ({ navigation }: any) => {
                 activeTab === 'favorites' ? styles.tabTextActive : styles.tabTextInactive,
               ]}
             >
-              शॉर्टलिस्टेड ({favoriteProfiles.length})
+              {t('shortlisted')} ({favoriteProfiles.length})
             </Text>
           </TouchableOpacity>
         </View>
@@ -159,17 +161,17 @@ export const MatchesScreen = ({ navigation }: any) => {
             />
             <Text style={styles.emptyTitle}>
               {activeTab === 'sent'
-                ? 'कोणतीही विनंती पाठवली नाही'
-                : 'कोणतीही प्रोफाइल शॉर्टलिस्ट केली नाही'}
+                ? t('noSentInterests')
+                : t('noShortlisted')}
             </Text>
             <Text style={styles.emptySubtitle}>
-              होम स्क्रीनवर जाऊन आवडत्या प्रोफाइल्सना रस दाखवा किंवा हार्ट आयकॉनवर टॅप करून शॉर्टलिस्ट करा.
+              {t('emptyMatchesSub')}
             </Text>
             <TouchableOpacity
               style={styles.exploreBtn}
               onPress={() => navigation.navigate('Home')}
             >
-              <Text style={styles.exploreBtnText}>नवीन प्रोफाइल्स शोधा</Text>
+              <Text style={styles.exploreBtnText}>{t('exploreProfiles')}</Text>
             </TouchableOpacity>
           </View>
         }
@@ -181,7 +183,7 @@ export const MatchesScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f4f4f6',
   },
   header: {
     backgroundColor: '#ffffff',
@@ -249,7 +251,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#eceff1',
+    borderColor: '#e8e8e8',
     alignItems: 'center',
     elevation: 2,
     shadowColor: '#000',

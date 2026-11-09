@@ -1,14 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { TextInput, Button, Appbar, Portal, Dialog, RadioButton } from 'react-native-paper';
+import { TextInput, Button, Text, Appbar, Portal, Dialog, RadioButton } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { getAllStates, getDistrictsByState } from '../constants/locations';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../context/LanguageContext';
-import { ALL_MAHARASHTRA_CASTES, setCasteSelectListener } from './CasteSelectionScreen';
-
-const primaryColor = '#901c60';
-const accentColor = '#4caf50'; // Vibrant Green for progress
+import { ALL_MAHARASHTRA_CASTES } from '../constants/castes';
+import { setCasteSelectListener } from './CasteSelectionScreen';
+import { CasteSelectionModal } from '../components/CasteSelectionModal';
+import { primaryColor, accentColor } from '../theme/theme';
 
 const DropdownInput = ({ label, value, onPress, textStyle, error }: { label: string, value?: string, onPress?: () => void, textStyle?: any, error?: boolean }) => (
   <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
@@ -186,10 +186,12 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
       <Appbar.Header style={{ backgroundColor: primaryColor, elevation: 0 }}>
         <Appbar.BackAction color="#ffffff" onPress={() => navigation.goBack()} />
         <Appbar.Content
-          title={t('step2Title')}
-          subtitle={t('step2Subtitle')}
-          titleStyle={{ color: '#ffffff', fontSize: 18, fontWeight: '600' }}
-          subtitleStyle={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}
+          title={
+            <View>
+              <Text style={{ color: '#ffffff', fontSize: 17, fontWeight: '600' }}>{t('step2Title')}</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>{t('step2Subtitle')}</Text>
+            </View>
+          }
         />
       </Appbar.Header>
 
@@ -223,14 +225,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
               <DropdownInput
                 label={`${t('caste')} *`}
                 value={casteOptions.find(o => o.value === caste)?.label || (caste ? caste.charAt(0).toUpperCase() + caste.slice(1) : '')}
-                onPress={() => {
-                  setCasteSelectListener((selected: string) => {
-                    setCaste(selected);
-                    setSubcaste('');
-                    setErrors((prev: any) => ({ ...prev, caste: false }));
-                  });
-                  navigation.navigate('CasteSelection', { currentCaste: caste });
-                }}
+                onPress={() => setCasteVisible(true)}
                 error={errors.caste}
               />
 
@@ -418,7 +413,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
         <Dialog visible={interCasteVisible} onDismiss={() => setInterCasteVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('interCaste')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => {
                 setInterCaste(newValue);
                 setInterCasteVisible(false);
@@ -444,7 +439,7 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
         <Dialog visible={dietVisible} onDismiss={() => setDietVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
           <Dialog.Title style={styles.dialogTitle}>{t('selectDiet')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView showsVerticalScrollIndicator={true}>
               <RadioButton.Group onValueChange={newValue => {
                 setDiet(newValue);
                 setDietVisible(false);
@@ -481,6 +476,19 @@ export const RegistrationStep2Screen = ({ route, navigation }: any) => {
           </Dialog.ScrollArea>
         </Dialog>
       </Portal>
+
+      {/* Caste Selection Modal (smooth native slide-up and slide-down) */}
+      <CasteSelectionModal
+        visible={casteVisible}
+        onClose={() => setCasteVisible(false)}
+        currentCaste={caste}
+        onSelect={(selectedCaste) => {
+          setCaste(selectedCaste);
+          setSubcaste('');
+          setErrors((prev: any) => ({ ...prev, caste: false }));
+          setCasteVisible(false);
+        }}
+      />
 
     </View>
   );

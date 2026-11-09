@@ -142,6 +142,10 @@ export const LoginScreen = ({ navigation }: any) => {
                 maxLength={16}
                 autoComplete="tel"
                 textContentType="telephoneNumber"
+                importantForAutofill="yes"
+                inputMode="tel"
+                autoCapitalize="none"
+                autoCorrect={false}
                 mode="outlined"
                 style={styles.input}
                 outlineStyle={styles.inputOutline}
@@ -235,7 +239,7 @@ const styles = StyleSheet.create({
   },
   inputOutline: {
     borderRadius: 8,
-    borderColor: '#e0e0e0',
+    borderColor: '#d0d0d0',
   },
   loginButton: {
     borderRadius: 8,

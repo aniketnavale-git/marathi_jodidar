@@ -4,8 +4,8 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  StatusBar,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Text, Button, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -27,7 +27,7 @@ export const LanguageSelectionScreen = ({ onComplete }: { onComplete?: () => voi
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.surface }]}>
-      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.surface} />
+      <StatusBar style="dark" />
 
       <View style={styles.content}>
         {/* Logo */}
@@ -249,11 +249,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   continueButton: {
-    borderRadius: 28,
+    borderRadius: 8,
     elevation: 3,
   },
   continueButtonContent: {
-    paddingVertical: 8,
+    height: 56,
   },
   continueButtonText: {
     fontSize: 16,

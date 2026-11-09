@@ -5,8 +5,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Profile } from '../data/dummyData';
 import { useInterests } from '../context/InterestsContext';
 import { useLanguage } from '../context/LanguageContext';
+import { primaryColor } from '../theme/theme';
 
-const primaryColor = '#901c60';
 const accentGreen = '#2e7d32';
 
 export const ProfileDetailsScreen = ({ route, navigation }: any) => {

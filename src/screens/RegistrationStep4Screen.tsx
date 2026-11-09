@@ -7,9 +7,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-
-const primaryColor = '#901c60';
-const accentColor = '#4caf50';
+import { primaryColor, accentColor } from '../theme/theme';
 
 export const RegistrationStep4Screen = ({ route, navigation }: any) => {
   const insets = useSafeAreaInsets();
@@ -17,6 +15,22 @@ export const RegistrationStep4Screen = ({ route, navigation }: any) => {
   const previousData = route.params || {};
   const [image, setImage] = useState<string | null>(null);
   const { registerUser, login } = useAuth();
+
+  const completeRegistration = (photoUri?: string | null) => {
+    const finalData = {
+      ...previousData,
+      profilePhoto: photoUri !== undefined ? photoUri : image
+    };
+
+    console.log('Final Registration Data:', finalData);
+
+    if (previousData.mobileNumber) {
+      registerUser(previousData.mobileNumber);
+      login(previousData.mobileNumber);
+    } else {
+      login();
+    }
+  };
 
   const pickImage = async () => {
     try {
@@ -34,32 +48,17 @@ export const RegistrationStep4Screen = ({ route, navigation }: any) => {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        setImage(result.assets[0].uri);
+        const selectedUri = result.assets[0].uri;
+        setImage(selectedUri);
+        completeRegistration(selectedUri);
       }
     } catch (error) {
       console.log('Image picker error:', error);
     }
   };
 
-  const handleFinish = () => {
-    const finalData = {
-      ...previousData,
-      profilePhoto: image
-    };
-
-    console.log('Final Registration Data:', finalData);
-
-    if (previousData.mobileNumber) {
-      registerUser(previousData.mobileNumber);
-    }
-    
-    Alert.alert(
-      t('finishRegistration'),
-      t('regSuccess'),
-      [
-        { text: "OK", onPress: () => login(previousData.mobileNumber) }
-      ]
-    );
+  const handleSkip = () => {
+    completeRegistration(null);
   };
 
   return (
@@ -68,11 +67,20 @@ export const RegistrationStep4Screen = ({ route, navigation }: any) => {
       <Appbar.Header style={{ backgroundColor: primaryColor, elevation: 0 }}>
         <Appbar.BackAction color="#ffffff" onPress={() => navigation.goBack()} />
         <Appbar.Content 
-          title={t('step4Title')} 
-          subtitle={t('step4Subtitle')}
-          titleStyle={{ color: '#ffffff', fontSize: 18, fontWeight: '600' }} 
-          subtitleStyle={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}
+          title={
+            <View>
+              <Text style={{ color: '#ffffff', fontSize: 17, fontWeight: '600' }}>{t('step4Title')}</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>{t('step4Subtitle')}</Text>
+            </View>
+          }
         />
+        <TouchableOpacity 
+          onPress={handleSkip} 
+          style={styles.skipHeaderButton}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.skipHeaderText}>{t('skip') || 'Skip'}</Text>
+        </TouchableOpacity>
       </Appbar.Header>
 
       {/* Modern Segmented Progress - 4 segments filled */}
@@ -85,13 +93,14 @@ export const RegistrationStep4Screen = ({ route, navigation }: any) => {
 
       <ScrollView 
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 + insets.bottom }}
+        showsVerticalScrollIndicator={false}
       >
         <View style={{ paddingHorizontal: 20, paddingTop: 16, alignItems: 'center' }}>
           <View style={styles.card}>
             <Text style={styles.title}>{t('addPhotoTitle')}</Text>
             <Text style={styles.subtitle}>{t('addPhotoSub')}</Text>
 
-            <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
+            <TouchableOpacity style={styles.imageContainer} onPress={pickImage} activeOpacity={0.8}>
               {image ? (
                 <Image source={{ uri: image }} style={styles.image} />
               ) : (
@@ -104,21 +113,13 @@ export const RegistrationStep4Screen = ({ route, navigation }: any) => {
 
             <Button 
               mode="contained" 
-              onPress={handleFinish} 
+              onPress={pickImage} 
               style={[styles.submitButton, { backgroundColor: primaryColor }]}
               contentStyle={styles.submitButtonContent}
               labelStyle={styles.submitButtonText}
+              icon="camera"
             >
-              {t('finishRegistration')}
-            </Button>
-            
-            <Button 
-              mode="text" 
-              onPress={handleFinish} 
-              style={styles.skipButton}
-              textColor={primaryColor}
-            >
-              {t('skipForNow')}
+              {t('selectPhoto') || 'Select Photo'}
             </Button>
           </View>
         </View>
@@ -129,10 +130,21 @@ export const RegistrationStep4Screen = ({ route, navigation }: any) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  skipHeaderButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  skipHeaderText: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
   card: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 24,
+    padding: 16,
     borderWidth: 1,
     borderColor: '#e8e8e8',
     elevation: 2,
@@ -185,7 +197,6 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 8,
     elevation: 3,
-    marginBottom: 12,
   },
   submitButtonContent: {
     height: 56,
@@ -195,9 +206,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
-  skipButton: {
-    width: '100%',
-  }
 });
 
 export default RegistrationStep4Screen;

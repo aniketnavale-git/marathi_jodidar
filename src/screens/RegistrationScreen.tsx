@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Keyboard } from 'react-native';
-import { TextInput, Button, Text, Appbar, Portal, Dialog, RadioButton } from 'react-native-paper';
+import { TextInput, Button, Text, Appbar, Portal, Dialog, RadioButton, IconButton } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLanguage } from '../context/LanguageContext';
-
-const primaryColor = '#901c60';
-const accentColor = '#4caf50'; // Vibrant Green for progress
+import { primaryColor, accentColor } from '../theme/theme';
 
 // Helper for actual dropdowns (City, Religion)
 const DropdownInput = ({ label, value, onPress, textStyle, contentStyle, error }: { label: string, value?: string, onPress?: () => void, textStyle?: any, contentStyle?: any, error?: boolean }) => (
@@ -33,6 +31,11 @@ const DropdownInput = ({ label, value, onPress, textStyle, contentStyle, error }
   </TouchableOpacity>
 );
 
+const dayOptions = Array.from({ length: 31 }, (_, i) => ({ 
+  label: `${i + 1}`, 
+  value: `${(i + 1).toString().padStart(2, '0')}` 
+}));
+
 export const RegistrationScreen = ({ route, navigation }: any) => {
   const { t, language } = useLanguage();
   const { mobileNumber } = route?.params || {};
@@ -41,7 +44,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
   const [gender, setGender] = useState('');
   const [maritalStatus, setMaritalStatus] = useState('');
   const [maritalStatusVisible, setMaritalStatusVisible] = useState(false);
-  
+
   const [dobDay, setDobDay] = useState('');
   const [dobMonth, setDobMonth] = useState('');
   const [dobYear, setDobYear] = useState('');
@@ -94,8 +97,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
     { label: t('childrenNotLivingWithMe'), value: 'no' }
   ];
 
-  const dayOptions = Array.from({ length: 31 }, (_, i) => ({ label: `${i + 1}`, value: `${(i + 1).toString().padStart(2, '0')}` }));
-  const monthOptions = language === 'mr' ? [
+  const monthOptions = useMemo(() => language === 'mr' ? [
     { label: 'जानेवारी', value: '01' }, { label: 'फेब्रुवारी', value: '02' }, { label: 'मार्च', value: '03' },
     { label: 'एप्रिल', value: '04' }, { label: 'मे', value: '05' }, { label: 'जून', value: '06' },
     { label: 'जुलै', value: '07' }, { label: 'ऑगस्ट', value: '08' }, { label: 'सप्टेंबर', value: '09' },
@@ -105,17 +107,17 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
     { label: 'April', value: '04' }, { label: 'May', value: '05' }, { label: 'June', value: '06' },
     { label: 'July', value: '07' }, { label: 'August', value: '08' }, { label: 'September', value: '09' },
     { label: 'October', value: '10' }, { label: 'November', value: '11' }, { label: 'December', value: '12' }
-  ];
-  
+  ], [language]);
+
   const minAge = gender === 'male' ? 21 : 18;
   const maxAge = gender === 'male' ? 65 : 60;
-  
+
   const currentYear = new Date().getFullYear();
   const totalYears = maxAge - minAge + 1;
-  const yearOptions = Array.from({ length: totalYears }, (_, i) => ({ 
-    label: `${currentYear - minAge - i}`, 
-    value: `${currentYear - minAge - i}` 
-  }));
+  const yearOptions = useMemo(() => Array.from({ length: totalYears }, (_, i) => ({
+    label: `${currentYear - minAge - i}`,
+    value: `${currentYear - minAge - i}`
+  })), [currentYear, minAge, totalYears]);
 
   const calculateAge = (day: string, month: string, year: string) => {
     if (!day || !month || !year) return 0;
@@ -155,11 +157,13 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
       <StatusBar style="light" />
       <Appbar.Header style={{ backgroundColor: primaryColor, elevation: 0 }}>
         <Appbar.BackAction color="#ffffff" onPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Login')} />
-        <Appbar.Content 
-          title={t('step1Title')} 
-          subtitle={t('step1Subtitle')}
-          titleStyle={{ color: '#ffffff', fontSize: 18, fontWeight: '600' }} 
-          subtitleStyle={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}
+        <Appbar.Content
+          title={
+            <View>
+              <Text style={{ color: '#ffffff', fontSize: 17, fontWeight: '600' }}>{t('step1Title')}</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>{t('step1Subtitle')}</Text>
+            </View>
+          }
         />
       </Appbar.Header>
 
@@ -171,7 +175,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
         <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: '#e0e0e0' }} />
       </View>
 
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
@@ -184,9 +188,9 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          
+
           <View style={styles.card}>
-            
+
             {mobileNumber ? (
               <View style={styles.phoneBadge}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -206,7 +210,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                   value={firstName}
                   onChangeText={(text) => {
                     setFirstName(text);
-                    if (errors.firstName) setErrors({...errors, firstName: false});
+                    if (errors.firstName) setErrors({ ...errors, firstName: false });
                   }}
                   mode="outlined"
                   maxLength={25}
@@ -222,7 +226,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                   value={lastName}
                   onChangeText={(text) => {
                     setLastName(text);
-                    if (errors.lastName) setErrors({...errors, lastName: false});
+                    if (errors.lastName) setErrors({ ...errors, lastName: false });
                   }}
                   mode="outlined"
                   maxLength={25}
@@ -247,7 +251,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                 onPress={() => {
                   Keyboard.dismiss();
                   setGender('male');
-                  setErrors({...errors, gender: false});
+                  setErrors({ ...errors, gender: false });
                 }}
                 activeOpacity={0.8}
               >
@@ -270,7 +274,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                 onPress={() => {
                   Keyboard.dismiss();
                   setGender('female');
-                  setErrors({...errors, gender: false});
+                  setErrors({ ...errors, gender: false });
                 }}
                 activeOpacity={0.8}
               >
@@ -290,56 +294,56 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
             </Text>
             <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
               <View style={{ flex: 1 }}>
-                <DropdownInput 
-                  label={`${t('day')} *`} 
+                <DropdownInput
+                  label={`${t('day')} *`}
                   value={dobDay}
-                  onPress={() => setDobDayVisible(true)} 
+                  onPress={() => setDobDayVisible(true)}
                   textStyle={{ marginBottom: 0 }}
                   contentStyle={{ fontSize: 13 }}
                   error={errors.dobDay}
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <DropdownInput 
-                  label={`${t('month')} *`} 
+                <DropdownInput
+                  label={`${t('month')} *`}
                   value={monthOptions.find(o => o.value === dobMonth)?.label || ''}
-                  onPress={() => setDobMonthVisible(true)} 
+                  onPress={() => setDobMonthVisible(true)}
                   textStyle={{ marginBottom: 0 }}
                   contentStyle={{ fontSize: 13 }}
                   error={errors.dobMonth}
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <DropdownInput 
-                  label={`${t('year')} *`} 
+                <DropdownInput
+                  label={`${t('year')} *`}
                   value={dobYear}
-                  onPress={() => setDobYearVisible(true)} 
+                  onPress={() => setDobYearVisible(true)}
                   textStyle={{ marginBottom: 0 }}
                   contentStyle={{ fontSize: 13 }}
                   error={errors.dobYear}
                 />
               </View>
             </View>
-            
-            <DropdownInput 
-              label={`${t('maritalStatus')} *`} 
+
+            <DropdownInput
+              label={`${t('maritalStatus')} *`}
               value={maritalOptions.find(o => o.value === maritalStatus)?.label || ''}
-              onPress={() => setMaritalStatusVisible(true)} 
+              onPress={() => setMaritalStatusVisible(true)}
               error={errors.maritalStatus}
             />
 
             {maritalStatus !== '' && maritalStatus !== 'single' && (
               <>
-                <DropdownInput 
-                  label={`${t('children')} *`} 
+                <DropdownInput
+                  label={`${t('children')} *`}
                   value={childrenOptions.find(o => o.value === children)?.label || ''}
                   onPress={() => setChildrenVisible(true)}
                   error={errors.children}
                 />
-                
+
                 {children !== '' && children !== 'none' && (
-                  <DropdownInput 
-                    label={`${t('livingWithYou')} *`} 
+                  <DropdownInput
+                    label={`${t('livingWithYou')} *`}
                     value={livingOptions.find(o => o.value === childrenLivingWithMe)?.label || ''}
                     onPress={() => setChildrenLivingVisible(true)}
                     error={errors.childrenLivingWithMe}
@@ -347,9 +351,9 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                 )}
               </>
             )}
-            
-            <Button 
-              mode="contained" 
+
+            <Button
+              mode="contained"
               onPress={() => {
                 // TEMPORARY: Validation disabled for testing
                 if (dobDay && dobMonth && dobYear) {
@@ -357,7 +361,7 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
                 } else {
                   handleProceedToStep2();
                 }
-              }} 
+              }}
               style={[styles.submitButton, { backgroundColor: primaryColor }]}
               contentStyle={styles.submitButtonContent}
               labelStyle={styles.submitButtonText}
@@ -371,121 +375,206 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
       </KeyboardAvoidingView>
 
       <Portal>
-        <Dialog visible={dobDayVisible} onDismiss={() => setDobDayVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
+        {/* Day Dialog */}
+        <Dialog 
+          visible={dobDayVisible} 
+          onDismiss={() => setDobDayVisible(false)} 
+          style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
+        >
           <Dialog.Title style={styles.dialogTitle}>{t('day')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
-              <RadioButton.Group onValueChange={newValue => { setDobDay(newValue); setDobDayVisible(false); setErrors({...errors, dobDay: false}); }} value={dobDay}>
+              <RadioButton.Group 
+                onValueChange={newValue => { 
+                  setDobDay(newValue); 
+                  setDobDayVisible(false); 
+                  setErrors({...errors, dobDay: false}); 
+                }} 
+                value={dobDay}
+              >
                 {dayOptions.map(option => (
-                  <RadioButton.Item key={option.value} label={option.label} value={option.value} color={primaryColor} labelStyle={styles.radioLabel} />
+                  <RadioButton.Item 
+                    key={option.value} 
+                    label={option.label} 
+                    value={option.value} 
+                    color={primaryColor} 
+                    labelStyle={styles.radioLabel} 
+                  />
                 ))}
               </RadioButton.Group>
             </ScrollView>
           </Dialog.ScrollArea>
         </Dialog>
 
-        <Dialog visible={dobMonthVisible} onDismiss={() => setDobMonthVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
+        {/* Month Dialog */}
+        <Dialog 
+          visible={dobMonthVisible} 
+          onDismiss={() => setDobMonthVisible(false)} 
+          style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
+        >
           <Dialog.Title style={styles.dialogTitle}>{t('month')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
-              <RadioButton.Group onValueChange={newValue => { setDobMonth(newValue); setDobMonthVisible(false); setErrors({...errors, dobMonth: false}); }} value={dobMonth}>
+              <RadioButton.Group 
+                onValueChange={newValue => { 
+                  setDobMonth(newValue); 
+                  setDobMonthVisible(false); 
+                  setErrors({...errors, dobMonth: false}); 
+                }} 
+                value={dobMonth}
+              >
                 {monthOptions.map(option => (
-                  <RadioButton.Item key={option.value} label={option.label} value={option.value} color={primaryColor} labelStyle={styles.radioLabel} />
+                  <RadioButton.Item 
+                    key={option.value} 
+                    label={option.label} 
+                    value={option.value} 
+                    color={primaryColor} 
+                    labelStyle={styles.radioLabel} 
+                  />
                 ))}
               </RadioButton.Group>
             </ScrollView>
           </Dialog.ScrollArea>
         </Dialog>
 
-        <Dialog visible={dobYearVisible} onDismiss={() => setDobYearVisible(false)} style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}>
+        {/* Year Dialog */}
+        <Dialog 
+          visible={dobYearVisible} 
+          onDismiss={() => setDobYearVisible(false)} 
+          style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
+        >
           <Dialog.Title style={styles.dialogTitle}>{t('year')}</Dialog.Title>
           <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
             <ScrollView showsVerticalScrollIndicator={true}>
-              <RadioButton.Group onValueChange={newValue => { setDobYear(newValue); setDobYearVisible(false); setErrors({...errors, dobYear: false}); }} value={dobYear}>
+              <RadioButton.Group 
+                onValueChange={newValue => { 
+                  setDobYear(newValue); 
+                  setDobYearVisible(false); 
+                  setErrors({...errors, dobYear: false}); 
+                }} 
+                value={dobYear}
+              >
                 {yearOptions.map(option => (
-                  <RadioButton.Item key={option.value} label={option.label} value={option.value} color={primaryColor} labelStyle={styles.radioLabel} />
+                  <RadioButton.Item 
+                    key={option.value} 
+                    label={option.label} 
+                    value={option.value} 
+                    color={primaryColor} 
+                    labelStyle={styles.radioLabel} 
+                  />
                 ))}
               </RadioButton.Group>
             </ScrollView>
           </Dialog.ScrollArea>
         </Dialog>
 
-        <Dialog visible={maritalStatusVisible} onDismiss={() => setMaritalStatusVisible(false)} style={{ backgroundColor: '#ffffff' }}>
+        <Dialog 
+          visible={maritalStatusVisible} 
+          onDismiss={() => setMaritalStatusVisible(false)} 
+          style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
+        >
           <Dialog.Title style={styles.dialogTitle}>{t('selectMaritalStatus')}</Dialog.Title>
-          <Dialog.Content>
-            <RadioButton.Group onValueChange={newValue => {
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
+            <ScrollView showsVerticalScrollIndicator={true}>
+              <RadioButton.Group onValueChange={newValue => {
                 setMaritalStatus(newValue);
                 setMaritalStatusVisible(false);
-                setErrors({...errors, maritalStatus: false});
+                setErrors({ ...errors, maritalStatus: false });
               }} value={maritalStatus}>
-              {maritalOptions.map(option => (
-                <RadioButton.Item 
-                  key={option.value} 
-                  label={option.label} 
-                  value={option.value} 
-                  color={primaryColor}
-                  labelStyle={styles.radioLabel}
-                />
-              ))}
-            </RadioButton.Group>
-          </Dialog.Content>
+                {maritalOptions.map(option => (
+                  <RadioButton.Item
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
+                    color={primaryColor}
+                    labelStyle={styles.radioLabel}
+                  />
+                ))}
+              </RadioButton.Group>
+            </ScrollView>
+          </Dialog.ScrollArea>
         </Dialog>
 
-        <Dialog visible={childrenVisible} onDismiss={() => setChildrenVisible(false)} style={{ backgroundColor: '#ffffff' }}>
+        <Dialog 
+          visible={childrenVisible} 
+          onDismiss={() => setChildrenVisible(false)} 
+          style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
+        >
           <Dialog.Title style={styles.dialogTitle}>{t('numberOfChildren')}</Dialog.Title>
-          <Dialog.Content>
-            <RadioButton.Group onValueChange={newValue => {
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
+            <ScrollView showsVerticalScrollIndicator={true}>
+              <RadioButton.Group onValueChange={newValue => {
                 setChildren(newValue);
                 setChildrenVisible(false);
-                setErrors({...errors, children: false});
+                setErrors({ ...errors, children: false });
               }} value={children}>
-              {childrenOptions.map(option => (
-                <RadioButton.Item 
-                  key={option.value} 
-                  label={option.label} 
-                  value={option.value} 
-                  color={primaryColor}
-                  labelStyle={styles.radioLabel}
-                />
-              ))}
-            </RadioButton.Group>
-          </Dialog.Content>
+                {childrenOptions.map(option => (
+                  <RadioButton.Item
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
+                    color={primaryColor}
+                    labelStyle={styles.radioLabel}
+                  />
+                ))}
+              </RadioButton.Group>
+            </ScrollView>
+          </Dialog.ScrollArea>
         </Dialog>
 
-        <Dialog visible={childrenLivingVisible} onDismiss={() => setChildrenLivingVisible(false)} style={{ backgroundColor: '#ffffff' }}>
+        <Dialog 
+          visible={childrenLivingVisible} 
+          onDismiss={() => setChildrenLivingVisible(false)} 
+          style={{ backgroundColor: '#ffffff', maxHeight: '80%' }}
+        >
           <Dialog.Title style={styles.dialogTitle}>{t('livingWithYou')}</Dialog.Title>
-          <Dialog.Content>
-            <RadioButton.Group onValueChange={newValue => {
+          <Dialog.ScrollArea style={{ paddingHorizontal: 16, borderTopWidth: 0, borderBottomWidth: 0 }}>
+            <ScrollView showsVerticalScrollIndicator={true}>
+              <RadioButton.Group onValueChange={newValue => {
                 setChildrenLivingWithMe(newValue);
                 setChildrenLivingVisible(false);
-                setErrors({...errors, childrenLivingWithMe: false});
+                setErrors({ ...errors, childrenLivingWithMe: false });
               }} value={childrenLivingWithMe}>
-              {livingOptions.map(option => (
-                <RadioButton.Item 
-                  key={option.value} 
-                  label={option.label} 
-                  value={option.value} 
-                  color={primaryColor}
-                  labelStyle={styles.radioLabel}
-                />
-              ))}
-            </RadioButton.Group>
-          </Dialog.Content>
+                {livingOptions.map(option => (
+                  <RadioButton.Item
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
+                    color={primaryColor}
+                    labelStyle={styles.radioLabel}
+                  />
+                ))}
+              </RadioButton.Group>
+            </ScrollView>
+          </Dialog.ScrollArea>
         </Dialog>
 
         {/* Age and Unchangeable DOB Confirmation Dialog */}
-        <Dialog 
-          visible={confirmDobVisible} 
-          onDismiss={() => setConfirmDobVisible(false)} 
+        <Dialog
+          visible={confirmDobVisible}
+          onDismiss={() => setConfirmDobVisible(false)}
           style={{ backgroundColor: '#ffffff', borderRadius: 16 }}
         >
+          <IconButton
+            icon="close"
+            size={22}
+            onPress={() => setConfirmDobVisible(false)}
+            style={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              zIndex: 10,
+              margin: 0,
+            }}
+          />
+
           <View style={{ alignItems: 'center', paddingTop: 20, paddingHorizontal: 20 }}>
-            <View style={{ 
-              width: 56, 
-              height: 56, 
-              borderRadius: 28, 
-              backgroundColor: '#fdf2f7', 
-              justifyContent: 'center', 
+            <View style={{
+              width: 56,
+              height: 56,
+              borderRadius: 28,
+              backgroundColor: '#fdf2f7',
+              justifyContent: 'center',
               alignItems: 'center',
               marginBottom: 12
             }}>
@@ -496,16 +585,15 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
             </Text>
           </View>
 
-          <Dialog.Content style={{ paddingTop: 14, paddingHorizontal: 20 }}>
-            <View style={{ 
-              backgroundColor: '#fbf5f8', 
-              borderRadius: 12, 
+          <Dialog.Content style={{ paddingTop: 14, paddingHorizontal: 20, paddingBottom: 6 }}>
+            <View style={{
+              backgroundColor: '#fbf5f8',
+              borderRadius: 12,
               paddingVertical: 14,
-              paddingHorizontal: 16, 
-              borderWidth: 1, 
+              paddingHorizontal: 14,
+              borderWidth: 1,
               borderColor: '#f0dbe7',
               alignItems: 'center',
-              marginBottom: 14
             }}>
               <Text style={{ fontSize: 13, color: '#666', marginBottom: 2 }}>
                 {t('calculatedAgeLabel')}
@@ -513,51 +601,42 @@ export const RegistrationScreen = ({ route, navigation }: any) => {
               <Text style={{ fontSize: 30, fontWeight: 'bold', color: primaryColor, marginBottom: 4 }}>
                 {calculatedAge} <Text style={{ fontSize: 18, fontWeight: 'normal', color: '#444' }}>{t('yearsOld')}</Text>
               </Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 14 }}>
                 <MaterialCommunityIcons name="cake-variant-outline" size={16} color="#777" />
                 <Text style={{ fontSize: 14, color: '#444', fontWeight: '500' }}>
                   {formattedDob}
                 </Text>
               </View>
-            </View>
 
-            <View style={{ 
-              flexDirection: 'row', 
-              backgroundColor: '#fff8e1', 
-              borderRadius: 8, 
-              paddingVertical: 10,
-              paddingHorizontal: 12, 
-              borderWidth: 1, 
-              borderColor: '#ffe082',
-              gap: 8,
-              alignItems: 'center'
-            }}>
-              <MaterialCommunityIcons name="alert-circle-outline" size={18} color="#f57c00" />
-              <Text style={{ flex: 1, fontSize: 13, color: '#795548', lineHeight: 18, fontWeight: '500' }}>
-                {t('dobWarningNote')}
-              </Text>
+              <View style={{
+                flexDirection: 'row',
+                backgroundColor: '#fff8e1',
+                borderRadius: 8,
+                paddingVertical: 10,
+                paddingHorizontal: 12,
+                borderWidth: 1,
+                borderColor: '#ffe082',
+                gap: 8,
+                alignItems: 'center',
+                width: '100%',
+              }}>
+                <MaterialCommunityIcons name="alert-circle-outline" size={18} color="#f57c00" />
+                <Text style={{ flex: 1, fontSize: 12, color: '#795548', lineHeight: 16, fontWeight: '500' }}>
+                  {t('dobWarningNote')}
+                </Text>
+              </View>
             </View>
           </Dialog.Content>
 
           <View style={{ paddingHorizontal: 20, paddingBottom: 20, paddingTop: 4 }}>
-            <Button 
-              mode="contained" 
+            <Button
+              mode="contained"
               onPress={handleProceedToStep2}
-              style={{ width: '100%', borderRadius: 8, backgroundColor: primaryColor, marginBottom: 12 }}
-              contentStyle={{ height: 48 }}
+              style={{ width: '100%', borderRadius: 8, backgroundColor: primaryColor }}
+              contentStyle={{ height: 56 }}
               labelStyle={{ fontSize: 15, fontWeight: 'bold' }}
             >
               {t('confirmAndContinue')}
-            </Button>
-            <Button 
-              mode="outlined" 
-              onPress={() => setConfirmDobVisible(false)}
-              style={{ width: '100%', borderRadius: 8, borderColor: '#ccc' }}
-              contentStyle={{ height: 46 }}
-              textColor="#555"
-              labelStyle={{ fontSize: 14 }}
-            >
-              {t('editDob')}
             </Button>
           </View>
         </Dialog>
@@ -575,7 +654,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingTop: 16,
     paddingBottom: 40,
     flexGrow: 1,
   },

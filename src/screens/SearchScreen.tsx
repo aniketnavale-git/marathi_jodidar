@@ -6,15 +6,15 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
-  StatusBar,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { dummyProfiles, Profile } from '../data/dummyData';
 import { useLanguage } from '../context/LanguageContext';
+import { primaryColor } from '../theme/theme';
 
-const primaryColor = '#901c60';
 const primaryLight = '#fdf2f7';
 
 export const SearchScreen = ({ navigation }: any) => {
@@ -87,7 +87,7 @@ export const SearchScreen = ({ navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <StatusBar style="dark" />
 
       {/* Header */}
       <View style={styles.header}>
@@ -176,7 +176,7 @@ export const SearchScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f4f4f6',
   },
   header: {
     backgroundColor: '#ffffff',
@@ -255,9 +255,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 12,
-    marginBottom: 10,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#eceff1',
+    borderColor: '#e8e8e8',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
