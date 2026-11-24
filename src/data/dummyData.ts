@@ -20,7 +20,7 @@ export interface Profile {
   manglik?: string;
 }
 
-export const dummyProfiles: Profile[] = [
+const allDummyProfiles: Profile[] = [
   {
     id: '1',
     name: 'Sneha Sawant',
@@ -32,8 +32,8 @@ export const dummyProfiles: Profile[] = [
     education: 'B.E. Computer',
     profession: 'Software Engineer',
     company: 'TCS Pune',
-    location: 'पुणे, महाराष्ट्र',
-    city: 'पुणे',
+    location: 'Pune, Maharashtra',
+    city: 'Pune',
     district: 'Pune',
     income: '₹1,00,000 / महिना',
     bio: 'साधी, सकारात्मक आणि कुटुंबप्रिय. करिअरसोबत चांगले संस्कार आणि मूल्यांना महत्त्व देणारी. सुसंस्कृत कुटुंबातील जोडीदाराचा शोध आहे.',
@@ -53,12 +53,12 @@ export const dummyProfiles: Profile[] = [
     education: 'M.Com, CA Inter',
     profession: 'Finance Analyst',
     company: 'HDFC Bank',
-    location: 'नाशिक, महाराष्ट्र',
-    city: 'नाशिक',
+    location: 'Nashik, Maharashtra',
+    city: 'Nashik',
     district: 'Nashik',
     income: '₹80,000 / महिना',
     bio: 'शांत व समजूतदार स्वभाव. वाचन, संगीत आणि प्रवासाची आवड. संस्कारी व सुशिक्षित कुटुंबातील वर अपेक्षित.',
-    imageUrl: 'https://images.unsplash.com/photo-1610043896564-9a00ce508e7b?w=800&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1597897545901-6ac15b725974?auto=format&fit=crop&w=800&q=80',
     isVerified: true,
     rashi: 'तूळ रास',
     manglik: 'नाही (Non-Manglik)',
@@ -74,8 +74,8 @@ export const dummyProfiles: Profile[] = [
     education: 'MBBS, DGO',
     profession: 'Medical Practitioner (Doctor)',
     company: 'Civil Hospital',
-    location: 'मुंबई, महाराष्ट्र',
-    city: 'मुंबई',
+    location: 'Mumbai, Maharashtra',
+    city: 'Mumbai',
     district: 'Mumbai',
     income: '₹1,50,000 / महिना',
     bio: 'वैद्यकीय क्षेत्रात कार्यरत. जीवनाकडे सकारात्मक दृष्टिकोन आणि कुटुंबाचा आदर करणारी. डॉक्टर किंवा इंजिनिअर जोडीदाराची अपेक्षा.',
@@ -95,8 +95,8 @@ export const dummyProfiles: Profile[] = [
     education: 'MBA Marketing',
     profession: 'Senior Product Manager',
     company: 'Tech Solutions Mumbai',
-    location: 'मुंबई, महाराष्ट्र',
-    city: 'मुंबई',
+    location: 'Mumbai, Maharashtra',
+    city: 'Mumbai',
     district: 'Mumbai Suburban',
     income: '₹1,80,000 / महिना',
     bio: 'मॉडर्न विचार आणि पारंपरिक मूल्यांचा मेळ. फिटनेस आणि ट्रेकिंगची आवड. सुशिक्षित आणि समजूतदार जोडीदाराचा शोध.',
@@ -116,8 +116,8 @@ export const dummyProfiles: Profile[] = [
     education: 'M.Sc. Biotechnology',
     profession: 'Research Associate',
     company: 'Serum Institute',
-    location: 'पुणे, महाराष्ट्र',
-    city: 'पुणे',
+    location: 'Pune, Maharashtra',
+    city: 'Pune',
     district: 'Pune',
     income: '₹65,000 / महिना',
     bio: 'विज्ञान आणि संशोधनात रुची. निसर्गप्रेमी आणि घरकामाची उत्तम आवड. मनमिळावू स्वभावाचा जोडीदार हवा आहे.',
@@ -137,8 +137,8 @@ export const dummyProfiles: Profile[] = [
     education: 'M.Tech (IIT Bombay)',
     profession: 'Data Science Lead',
     company: 'Amazon Pune',
-    location: 'पुणे, महाराष्ट्र',
-    city: 'पुणे',
+    location: 'Pune, Maharashtra',
+    city: 'Pune',
     district: 'Pune',
     income: '₹2,30,000 / महिना',
     bio: 'टेक्नॉलॉजी, शास्त्रीय संगीत आणि फोटोग्राफीची आवड. स्पष्टवक्ता आणि सहकार्यशील स्वभाव. समविचारी जोडीदार अपेक्षित.',
@@ -148,4 +148,7 @@ export const dummyProfiles: Profile[] = [
     manglik: 'नाही',
   }
 ];
+
+// Demo app currently shows female profiles only.
+export const dummyProfiles = allDummyProfiles.filter(profile => profile.id !== '4' && profile.id !== '6');
 

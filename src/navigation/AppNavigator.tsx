@@ -11,6 +11,7 @@ import { RegistrationStep4Screen } from '../screens/RegistrationStep4Screen';
 import { CasteSelectionScreen } from '../screens/CasteSelectionScreen';
 import { SplashScreen } from '../screens/SplashScreen';
 import { LanguageSelectionScreen } from '../screens/LanguageSelectionScreen';
+import { NotificationsScreen } from '../screens/NotificationsScreen';
 import { useTheme } from 'react-native-paper';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -90,6 +91,11 @@ export const AppNavigator = () => {
             options={{ 
               title: 'भाषा निवडा / Choose Language',
             }} 
+          />
+          <Stack.Screen
+            name="Notifications"
+            component={NotificationsScreen}
+            options={{ headerShown: false }}
           />
         </Stack.Group>
       )}

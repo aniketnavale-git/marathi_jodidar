@@ -1,148 +1,216 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   View,
   StyleSheet,
   Image,
-  TouchableOpacity,
   FlatList,
   RefreshControl,
   StatusBar,
+  TouchableOpacity,
+  Dimensions,
+  ScrollView,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
-import { Text } from 'react-native-paper';
+import {
+  Appbar,
+  Card,
+  Chip,
+  Button,
+  IconButton,
+  Surface,
+  Text,
+  useTheme,
+} from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { dummyProfiles, Profile } from '../data/dummyData';
 import { useInterests } from '../context/InterestsContext';
 import { useLanguage } from '../context/LanguageContext';
-import { primaryColor } from '../theme/theme';
 
-const primaryLight = '#fdf2f7';
-const accentGreen = '#2e7d32';
+const { width } = Dimensions.get('window');
+const BANNER_WIDTH = width - 32;
 
 export const HomeScreen = ({ navigation }: any) => {
+  const theme = useTheme();
   const { t, language } = useLanguage();
-  const allTag = language === 'mr' ? 'सर्व' : 'All';
-  const [selectedTag, setSelectedTag] = useState(allTag);
-  const { favorites, sentInterests, toggleFavorite, toggleInterest } = useInterests();
+  const isMr = language === 'mr';
+
+  const { favorites, toggleFavorite } = useInterests();
   const [refreshing, setRefreshing] = useState(false);
 
-  const filterTags = language === 'mr' 
-    ? ['सर्व', 'पुणे', 'मुंबई', 'मराठा', 'ब्राह्मण', 'कुणबी']
-    : ['All', 'Pune', 'Mumbai', 'Maratha', 'Brahmin', 'Kunbi'];
+  // Smart 16:9 Demo Image Banners Data
+  const banners = useMemo(() => [
+    {
+      id: '1',
+      image: { uri: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=1200&auto=format&fit=crop&q=80' },
+      route: 'Matches',
+    },
+    {
+      id: '2',
+      image: { uri: 'https://images.unsplash.com/photo-1607190074257-dd4b7af0309f?w=1200&auto=format&fit=crop&q=80' },
+      route: 'Search',
+    },
+    {
+      id: '3',
+      image: { uri: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1200&auto=format&fit=crop&q=80' },
+      route: 'Matches',
+    },
+    {
+      id: '4',
+      image: { uri: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&auto=format&fit=crop&q=80' },
+      route: 'Search',
+    },
+  ], []);
+
+  const bannerRef = useRef<FlatList>(null);
+  const [activeBannerIndex, setActiveBannerIndex] = useState(0);
+
+  // Auto-scroll moving banner effect
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const timer = setInterval(() => {
+      setActiveBannerIndex(prevIndex => {
+        const nextIndex = (prevIndex + 1) % banners.length;
+        bannerRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+        return nextIndex;
+      });
+    }, 3500);
+
+    return () => clearInterval(timer);
+  }, [banners.length]);
+
+  const handleBannerScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const scrollOffset = event.nativeEvent.contentOffset.x;
+    const index = Math.round(scrollOffset / BANNER_WIDTH);
+    if (index >= 0 && index < banners.length && index !== activeBannerIndex) {
+      setActiveBannerIndex(index);
+    }
+  };
+
+  // Quick Daily Recommendations (Story style avatars)
+  const dailyRecommendations = useMemo(() => {
+    return dummyProfiles.slice(0, 5);
+  }, []);
 
   // Pull to refresh simulation
   const onRefresh = () => {
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
-    }, 800);
+    }, 700);
   };
 
-  // Filter profiles based on selected tag
-  const filteredProfiles = dummyProfiles.filter(profile => {
-    if (selectedTag === allTag) return true;
-    if (selectedTag === 'पुणे' || selectedTag === 'Pune') return profile.city === 'पुणे' || profile.location.includes('पुणे') || profile.location.includes('Pune');
-    if (selectedTag === 'मुंबई' || selectedTag === 'Mumbai') return profile.city === 'मुंबई' || profile.location.includes('मुंबई') || profile.location.includes('Mumbai');
-    if (selectedTag === 'मराठा' || selectedTag === 'Maratha') return profile.caste.includes('मराठा') || profile.caste.includes('Maratha');
-    if (selectedTag === 'ब्राह्मण' || selectedTag === 'Brahmin') return profile.caste.includes('ब्राह्मण') || profile.caste.includes('Brahmin');
-    if (selectedTag === 'कुणबी' || selectedTag === 'Kunbi') return profile.caste.includes('कुणबी') || profile.caste.includes('Kunbi');
-    return true;
-  });
+  const filteredProfiles = dummyProfiles;
 
-  // Standard Matrimonial Profile Card
+  // Match score generator based on profile index
+  const getMatchScore = (id: string) => {
+    const num = parseInt(id, 10) || 1;
+    return 98 - (num % 5) * 2;
+  };
+
+  // Profile Card Component
   const renderProfileCard = ({ item }: { item: Profile }) => {
     const isFavorited = favorites.has(item.id);
-    const isInterestSent = sentInterests.has(item.id);
+    const displayName = isMr ? (item.marathiName || item.name) : item.name;
 
     return (
-      <View style={styles.card}>
-        {/* Photo Container */}
-        <TouchableOpacity
-          activeOpacity={0.95}
-          onPress={() => navigation.navigate('ProfileDetails', { profile: item })}
-          style={styles.imageContainer}
-        >
-          <Image source={{ uri: item.imageUrl }} style={styles.profileImage} />
+      <Card
+        mode="elevated"
+        elevation={2}
+        style={[styles.profileCard, { backgroundColor: theme.colors.surface }]}
+        onPress={() => navigation.navigate('ProfileDetails', { profile: item })}
+      >
+        {/* Profile Image with Top and Bottom Overlays */}
+        <View style={styles.imageWrapper}>
+          <Image
+            source={{ uri: item.imageUrl }}
+            style={styles.profileImage}
+            resizeMode="cover"
+          />
 
-          {/* Top Row: Verified Badge & Favorite Icon */}
+          {/* Top Overlays: Verified & Match Score + Favorite Heart */}
           <View style={styles.imageOverlayTop}>
-            {item.isVerified ? (
-              <View style={styles.verifiedBadge}>
-                <MaterialCommunityIcons name="check-decagram" size={14} color="#ffffff" />
-                <Text style={styles.verifiedText}>{t('verifiedProfile')}</Text>
-              </View>
-            ) : (
-              <View />
-            )}
+            <View style={styles.topBadgesRow}>
+              {item.isVerified && (
+                <Surface style={[styles.verifiedBadge, { backgroundColor: theme.colors.tertiary }]} elevation={2}>
+                  <MaterialCommunityIcons name="check-decagram" size={14} color={theme.colors.onTertiary} />
+                  <Text style={[styles.verifiedText, { color: theme.colors.onTertiary }]}>
+                    {isMr ? 'व्हेरिफाइड' : 'Verified'}
+                  </Text>
+                </Surface>
+              )}
+            </View>
 
-            <TouchableOpacity
-              style={styles.heartButton}
-              onPress={() => toggleFavorite(item.id)}
-              activeOpacity={0.8}
-            >
-              <MaterialCommunityIcons
-                name={isFavorited ? 'heart' : 'heart-outline'}
+            {/* Favorite Heart Button */}
+            <Surface style={styles.heartSurface} elevation={3}>
+              <IconButton
+                icon={isFavorited ? 'heart' : 'heart-outline'}
+                iconColor={isFavorited ? '#e91e63' : theme.colors.onSurfaceVariant}
                 size={22}
-                color={isFavorited ? '#e91e63' : '#ffffff'}
+                style={styles.heartBtn}
+                onPress={() => toggleFavorite(item.id)}
               />
-            </TouchableOpacity>
+            </Surface>
           </View>
 
-          {/* Bottom Gradient with Name, Age & Height */}
+          {/* Bottom Gradient with Name */}
           <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.85)']}
+            colors={['transparent', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.88)']}
             style={styles.imageOverlayBottom}
           >
             <View style={styles.nameRow}>
-              <Text style={styles.profileName}>
-                {language === 'en' ? item.name : (item.marathiName || item.name)}, {item.age} {language === 'mr' ? 'वर्षे' : 'yrs'}
+              <Text variant="titleLarge" style={styles.profileName} numberOfLines={1}>
+                {displayName}
               </Text>
-              <View style={styles.heightBadge}>
-                <Text style={styles.heightText}>{item.height}</Text>
-              </View>
             </View>
-            {language === 'mr' && item.name && item.marathiName && (
+
+            {isMr && item.name && item.marathiName && (
               <Text style={styles.englishSubName}>{item.name}</Text>
             )}
           </LinearGradient>
-        </TouchableOpacity>
+        </View>
 
-        {/* Profile Details Body */}
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={() => navigation.navigate('ProfileDetails', { profile: item })}
-          style={styles.cardBody}
-        >
+        {/* Card Content: Matrimonial Details */}
+        <Card.Content style={styles.cardContent}>
           {/* Education & Profession */}
           <View style={styles.detailRow}>
-            <MaterialCommunityIcons name="school-outline" size={18} color={primaryColor} style={styles.detailIcon} />
-            <Text style={styles.detailText} numberOfLines={1}>
-              {item.education} • {item.profession}
-            </Text>
-          </View>
-
-          {/* Location */}
-          <View style={styles.detailRow}>
-            <MaterialCommunityIcons name="map-marker-outline" size={18} color={primaryColor} style={styles.detailIcon} />
-            <Text style={styles.detailText} numberOfLines={1}>
-              {item.location} {item.district ? `(${item.district})` : ''}
+            <View style={styles.detailIconWrapper}>
+              <MaterialCommunityIcons name="school-outline" size={17} color={theme.colors.primary} />
+            </View>
+            <Text variant="bodyMedium" style={[styles.detailText, { color: theme.colors.onSurface }]} numberOfLines={1}>
+              <Text style={[styles.detailHighlight, { color: theme.colors.onSurface }]}>{item.profession}</Text>
+              {item.education ? ` • ${item.education}` : ''}
             </Text>
           </View>
 
           {/* Caste & Subcaste */}
           <View style={styles.detailRow}>
-            <MaterialCommunityIcons name="account-group-outline" size={18} color={primaryColor} style={styles.detailIcon} />
-            <Text style={styles.detailText} numberOfLines={1}>
+            <View style={styles.detailIconWrapper}>
+              <MaterialCommunityIcons name="account-group-outline" size={17} color={theme.colors.primary} />
+            </View>
+            <Text variant="bodyMedium" style={[styles.detailText, { color: theme.colors.onSurface }]} numberOfLines={1}>
               {item.caste} {item.subcaste ? `• ${item.subcaste}` : ''}
             </Text>
           </View>
 
-          {/* Horoscope / Kundali */}
+          {/* Location */}
+          <View style={styles.detailRow}>
+            <View style={styles.detailIconWrapper}>
+              <MaterialCommunityIcons name="map-marker-outline" size={17} color={theme.colors.primary} />
+            </View>
+            <Text variant="bodyMedium" style={[styles.detailText, { color: theme.colors.onSurface }]} numberOfLines={1}>
+              {item.location} {item.district ? `(${item.district})` : ''}
+            </Text>
+          </View>
+
+          {/* Horoscope / Kundali (if present) */}
           {(item.rashi || item.manglik) && (
             <View style={styles.detailRow}>
-              <MaterialCommunityIcons name="star-outline" size={18} color={primaryColor} style={styles.detailIcon} />
-              <Text style={styles.detailText} numberOfLines={1}>
+              <View style={styles.detailIconWrapper}>
+                <MaterialCommunityIcons name="star-four-points-outline" size={17} color={theme.colors.primary} />
+              </View>
+              <Text variant="bodyMedium" style={[styles.detailText, { color: theme.colors.onSurface }]} numberOfLines={1}>
                 {item.rashi ? `${item.rashi}` : ''}
                 {item.rashi && item.manglik ? ' • ' : ''}
                 {item.manglik ? `${item.manglik}` : ''}
@@ -150,275 +218,427 @@ export const HomeScreen = ({ navigation }: any) => {
             </View>
           )}
 
-          {/* Short Bio */}
+          {/* Bio Snippet */}
           {item.bio ? (
-            <Text style={styles.bioSnippet} numberOfLines={2}>
-              "{item.bio}"
-            </Text>
+            <Surface style={[styles.bioSurface, { backgroundColor: theme.colors.surfaceVariant }]} elevation={0}>
+              <Text variant="bodySmall" style={[styles.bioText, { color: theme.colors.onSurfaceVariant }]} numberOfLines={2}>
+                "{item.bio}"
+              </Text>
+            </Surface>
           ) : null}
-        </TouchableOpacity>
+        </Card.Content>
 
-        {/* Card Action Buttons */}
+        {/* Simple details for quick understanding */}
+        <Card.Content style={styles.simpleCardContent}>
+          <View style={styles.simpleInfoRow}>
+            <View style={styles.simpleInfoItem}>
+              <MaterialCommunityIcons name="calendar-account-outline" size={21} color={theme.colors.primary} />
+              <View style={styles.simpleInfoText}>
+                <Text style={styles.simpleInfoLabel}>{isMr ? 'वय' : 'Age'}</Text>
+                <Text style={[styles.simpleInfoValue, { color: theme.colors.onSurface }]}>{item.age} {isMr ? 'वर्षे' : 'years'}</Text>
+              </View>
+            </View>
+            <View style={styles.simpleInfoItem}>
+              <MaterialCommunityIcons name="human-male-height" size={21} color={theme.colors.primary} />
+              <View style={styles.simpleInfoText}>
+                <Text style={styles.simpleInfoLabel}>{isMr ? 'उंची' : 'Height'}</Text>
+                <Text style={[styles.simpleInfoValue, { color: theme.colors.onSurface }]}>{item.height}</Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.simpleInfoRow}>
+            <View style={styles.simpleInfoItem}>
+              <MaterialCommunityIcons name="briefcase-outline" size={21} color={theme.colors.primary} />
+              <View style={styles.simpleInfoText}>
+                <Text style={styles.simpleInfoLabel}>{isMr ? 'काम' : 'Work'}</Text>
+                <Text style={[styles.simpleInfoValue, { color: theme.colors.onSurface }]} numberOfLines={1}>{item.profession}</Text>
+              </View>
+            </View>
+            <View style={styles.simpleInfoItem}>
+              <MaterialCommunityIcons name="map-marker-outline" size={21} color={theme.colors.primary} />
+              <View style={styles.simpleInfoText}>
+                <Text style={styles.simpleInfoLabel}>{isMr ? 'ठिकाण' : 'Location'}</Text>
+                <Text style={[styles.simpleInfoValue, { color: theme.colors.onSurface }]} numberOfLines={1}>{item.location}</Text>
+              </View>
+            </View>
+          </View>
+        </Card.Content>
+
+        {/* Card Actions: View Profile & Chat */}
         <View style={styles.cardActions}>
-          {/* View Profile Button */}
-          <TouchableOpacity
-            style={styles.viewProfileBtn}
+          <Button
+            mode="outlined"
+            icon="eye-outline"
+            textColor={theme.colors.primary}
+            style={[styles.viewProfileBtn, { borderColor: theme.colors.primary }]}
+            contentStyle={styles.btnContent}
             onPress={() => navigation.navigate('ProfileDetails', { profile: item })}
-            activeOpacity={0.7}
           >
-            <MaterialCommunityIcons name="eye-outline" size={18} color={primaryColor} />
-            <Text style={styles.viewProfileBtnText}>{t('viewProfile')}</Text>
-          </TouchableOpacity>
+            {isMr ? 'प्रोफाइल पाहा' : 'View Profile'}
+          </Button>
 
-          {/* Send Interest Button */}
-          <TouchableOpacity
-            style={[
-              styles.interestBtn,
-              isInterestSent ? styles.interestBtnSent : styles.interestBtnDefault,
-            ]}
-            onPress={() => toggleInterest(item.id)}
-            activeOpacity={0.8}
+          <Button
+            mode="contained"
+            icon="message-text-outline"
+            buttonColor={theme.colors.tertiary}
+            textColor={theme.colors.onTertiary}
+            style={styles.chatBtn}
+            contentStyle={styles.btnContent}
+            onPress={() => navigation.navigate('Chat')}
           >
-            <MaterialCommunityIcons
-              name={isInterestSent ? 'check-circle' : 'heart'}
-              size={18}
-              color="#ffffff"
-            />
-            <Text style={styles.interestBtnText}>
-              {isInterestSent ? t('interestSent') : t('sendInterest')}
-            </Text>
-          </TouchableOpacity>
+            {isMr ? 'चॅट करा' : 'Chat'}
+          </Button>
         </View>
+      </Card>
+    );
+  };
+
+  // Header of the Feed: Greeting + Daily Story Avatars + Quick Search Bar + Filter Chips
+  const renderListHeader = () => {
+    return (
+      <View style={styles.feedHeaderContainer}>
+        {/* Smart 16:9 Image Banner Carousel with Padding on Both Sides */}
+        <View style={styles.carouselContainer}>
+          <FlatList
+            ref={bannerRef}
+            data={banners}
+            keyExtractor={item => item.id}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={BANNER_WIDTH}
+            snapToAlignment="center"
+            decelerationRate="fast"
+            getItemLayout={(_, index) => ({
+              length: BANNER_WIDTH,
+              offset: BANNER_WIDTH * index,
+              index,
+            })}
+            onScrollToIndexFailed={({ index }) => {
+              bannerRef.current?.scrollToOffset({ offset: BANNER_WIDTH * index, animated: true });
+            }}
+            onMomentumScrollEnd={handleBannerScroll}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                activeOpacity={0.92}
+                onPress={() => navigation.navigate(item.route)}
+                style={[styles.heroBannerContainer, { width: BANNER_WIDTH, aspectRatio: 16 / 9 }]}
+              >
+                <Surface
+                  style={[
+                    styles.heroBannerSurface,
+                    {
+                      width: BANNER_WIDTH,
+                      aspectRatio: 16 / 9,
+                      borderColor: theme.colors.outlineVariant,
+                    },
+                  ]}
+                  elevation={2}
+                >
+                  <Image
+                    source={item.image}
+                    style={styles.bannerImage}
+                    resizeMode="cover"
+                  />
+                </Surface>
+              </TouchableOpacity>
+            )}
+          />
+
+          {/* Carousel Pagination Dots */}
+          <View style={styles.paginationDotsRow}>
+            {banners.map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.paginationDot,
+                  activeBannerIndex === i
+                    ? [styles.paginationDotActive, { backgroundColor: theme.colors.primary }]
+                    : styles.paginationDotInactive,
+                ]}
+              />
+            ))}
+          </View>
+        </View>
+
+        {/* Daily Recommendations / Story Avatars */}
+        <View style={styles.storiesSection}>
+          <View style={styles.storiesHeader}>
+            <Text style={[styles.sectionHeading, { color: theme.colors.onSurface }]}>
+              {isMr ? 'आजचे खास अनुरूप (Daily Matches)' : 'Today\'s Top Picks'}
+            </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Matches')}>
+              <Text style={[styles.viewAllText, { color: theme.colors.primary }]}>
+                {isMr ? 'सर्व पहा >' : 'View All >'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.storiesList}>
+            {dailyRecommendations.map((profile) => (
+              <TouchableOpacity
+                key={profile.id}
+                style={styles.storyItem}
+                onPress={() => navigation.navigate('ProfileDetails', { profile })}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.storyRing, { borderColor: theme.colors.primary, backgroundColor: theme.colors.surface }]}>
+                  <Image source={{ uri: profile.imageUrl }} style={styles.storyAvatar} />
+                  {profile.isVerified && (
+                    <View style={[styles.storyVerifiedDot, { backgroundColor: theme.colors.tertiary }]}>
+                      <MaterialCommunityIcons name="check" size={10} color={theme.colors.onTertiary} />
+                    </View>
+                  )}
+                </View>
+                <Text style={[styles.storyName, { color: theme.colors.onSurface }]} numberOfLines={1}>
+                  {isMr ? (profile.marathiName?.split(' ')[0] || profile.name.split(' ')[0]) : profile.name.split(' ')[0]}
+                </Text>
+                <Text style={[styles.storyScore, { color: theme.colors.tertiary }]}>{getMatchScore(profile.id)}% Match</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+      </View>
+    );
+  };
+
+  // Footer Component
+  const renderListFooter = () => {
+    return (
+      <View style={styles.footerContainer}>
+        <Surface
+          style={[
+            styles.trustFooterSurface,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.outlineVariant,
+            },
+          ]}
+          elevation={1}
+        >
+          <MaterialCommunityIcons name="handshake-outline" size={32} color={theme.colors.primary} />
+          <Text style={[styles.trustFooterTitle, { color: theme.colors.primary }]}>
+            {isMr ? 'विश्वासू मराठी जोडीदार' : 'Marathi Jodidar Promise'}
+          </Text>
+          <Text style={[styles.trustFooterSubtitle, { color: theme.colors.onSurfaceVariant }]}>
+            {isMr
+              ? '१००% पडताळणी केलेले प्रोफाइल्स • संपूर्ण गोपनीयतेची हमी • लाखो आनंदी कुटुंबे'
+              : '100% Verified Profiles • Complete Privacy Guaranteed • Trusted by Families'}
+          </Text>
+        </Surface>
       </View>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar barStyle="light-content" backgroundColor={theme.colors.primary} />
 
-      {/* Clean Top Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <MaterialCommunityIcons name="cards-heart" size={28} color={primaryColor} />
-          <View style={{ marginLeft: 8 }}>
-            <Text style={styles.headerTitle}>{t('appName')}</Text>
-            <Text style={styles.headerSubtitle}>{t('appTagline')}</Text>
-          </View>
-        </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity
-            style={styles.headerIconBtn}
-            onPress={() => navigation.navigate('Search')}
-          >
-            <MaterialCommunityIcons name="magnify" size={24} color="#333333" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.headerIconBtn}>
-            <MaterialCommunityIcons name="bell-outline" size={24} color="#333333" />
-            <View style={styles.notificationDot} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Filter Chips Bar */}
-      <View style={styles.filterBar}>
-        <FlatList
-          data={filterTags}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={item => item}
-          contentContainerStyle={styles.filterList}
-          renderItem={({ item }) => {
-            const isSelected = selectedTag === item;
-            return (
-              <TouchableOpacity
-                style={[
-                  styles.filterChip,
-                  isSelected ? styles.filterChipActive : styles.filterChipInactive,
-                ]}
-                onPress={() => setSelectedTag(item)}
-                activeOpacity={0.7}
-              >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    isSelected ? styles.filterChipTextActive : styles.filterChipTextInactive,
-                  ]}
-                >
-                  {item}
-                </Text>
-              </TouchableOpacity>
-            );
-          }}
+      {/* Top App Bar with Paper Theme Colors */}
+      <Appbar.Header style={{ backgroundColor: theme.colors.primary }}>
+        <Appbar.Content
+          title={t('appName')}
+          titleStyle={[styles.appbarTitle, { color: theme.colors.onPrimary }]}
         />
-      </View>
 
-      {/* Profile Feed */}
+        <Appbar.Action
+          icon="bell-badge-outline"
+          color={theme.colors.onPrimary}
+          onPress={() => navigation.navigate('Notifications')}
+        />
+      </Appbar.Header>
+
+      {/* Feed List */}
       <FlatList
         data={filteredProfiles}
         renderItem={renderProfileCard}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.feedContainer}
+        contentContainerStyle={styles.feedContent}
         showsVerticalScrollIndicator={false}
+        ListHeaderComponent={renderListHeader()}
+        ListFooterComponent={filteredProfiles.length > 0 ? renderListFooter : null}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={[primaryColor]}
-            tintColor={primaryColor}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
           />
         }
-        ListHeaderComponent={
-          <View style={styles.feedHeader}>
-            <Text style={styles.feedCountText}>
-              {t('availableProfiles')} ({filteredProfiles.length})
-            </Text>
-          </View>
-        }
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <MaterialCommunityIcons name="account-search-outline" size={60} color="#cccccc" />
-            <Text style={styles.emptyTitle}>{t('noProfilesFound')}</Text>
-            <Text style={styles.emptySubtitle}>
-              {language === 'mr' ? 'कृपया इतर फिल्टर निवडून पुन्हा प्रयत्न करा.' : 'Please try selecting different filters.'}
+          <Surface style={[styles.emptyCard, { backgroundColor: theme.colors.surface }]} elevation={1}>
+            <MaterialCommunityIcons name="account-search-outline" size={64} color={theme.colors.outline} />
+            <Text variant="titleMedium" style={[styles.emptyTitle, { color: theme.colors.onSurface }]}>
+              {t('noProfilesFound')}
             </Text>
-            <TouchableOpacity
-              style={styles.resetFilterBtn}
-              onPress={() => setSelectedTag(allTag)}
+            <Text variant="bodyMedium" style={[styles.emptySubtitle, { color: theme.colors.onSurfaceVariant }]}>
+              {isMr
+                ? 'निवडलेल्या निकषानुसार प्रोफाइल्स सापडल्या नाहीत. कृपया फिल्टर बदला.'
+                : 'No profiles match your selected filters. Please adjust your criteria.'}
+            </Text>
+            <Button
+              mode="contained"
+              icon="refresh"
+              buttonColor={theme.colors.primary}
+              textColor={theme.colors.onPrimary}
+              style={styles.resetBtn}
+              onPress={onRefresh}
             >
-              <Text style={styles.resetFilterText}>
-                {language === 'mr' ? 'सर्व प्रोफाइल्स पहा' : 'View all profiles'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+              {isMr ? 'रिफ्रेश करा' : 'Refresh'}
+            </Button>
+          </Surface>
         }
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
   },
-  header: {
+
+  // App Bar
+  logoIcon: {
+    marginLeft: 12,
+    marginRight: 4,
+  },
+  appbarTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    letterSpacing: 0.3,
+    paddingLeft: 8,
+  },
+
+  // Feed Header Container
+  feedHeaderContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+
+
+  // Smart 16:9 Image Banner Carousel
+  carouselContainer: {
+    marginBottom: 16,
+  },
+  heroBannerContainer: {
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  heroBannerSurface: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#e8e8e8',
+    borderWidth: 1.5,
+  },
+  bannerImage: {
+    width: '100%',
+    height: '100%',
+  },
+  paginationDotsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 6,
+  },
+  paginationDot: {
+    height: 5,
+    borderRadius: 3,
+  },
+  paginationDotActive: {
+    width: 20,
+  },
+  paginationDotInactive: {
+    width: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0.18)',
+  },
+
+  // Stories Section (Daily Matches)
+  storiesSection: {
+    marginBottom: 16,
+  },
+  storiesHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    marginBottom: 10,
   },
-  headerLeft: {
-    flexDirection: 'row',
+  sectionHeading: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  viewAllText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  storiesList: {
+    gap: 14,
+    paddingVertical: 2,
+  },
+  storyItem: {
     alignItems: 'center',
+    width: 68,
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: primaryColor,
-    letterSpacing: 0.3,
-  },
-  headerSubtitle: {
-    fontSize: 11,
-    color: '#777777',
-    marginTop: 1,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  headerIconBtn: {
-    padding: 6,
+  storyRing: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    borderWidth: 2.5,
+    padding: 2,
     position: 'relative',
   },
-  notificationDot: {
+  storyAvatar: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 26,
+  },
+  storyVerifiedDot: {
     position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#e53935',
+    bottom: -1,
+    right: -1,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#ffffff',
   },
-
-  // Filter Chips Bar
-  filterBar: {
-    backgroundColor: '#ffffff',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  filterList: {
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 7,
-    borderRadius: 20,
-  },
-  filterChipActive: {
-    backgroundColor: primaryColor,
-  },
-  filterChipInactive: {
-    backgroundColor: '#f1f2f4',
-  },
-  filterChipText: {
-    fontSize: 13,
+  storyName: {
+    fontSize: 11,
     fontWeight: '600',
+    marginTop: 5,
+    textAlign: 'center',
   },
-  filterChipTextActive: {
-    color: '#ffffff',
-  },
-  filterChipTextInactive: {
-    color: '#444444',
-  },
-
-  // Feed
-  feedContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 90,
-  },
-  feedHeader: {
-    marginBottom: 10,
-    paddingHorizontal: 4,
-  },
-  feedCountText: {
-    fontSize: 13,
-    color: '#666666',
-    fontWeight: '600',
+  storyScore: {
+    fontSize: 9,
+    fontWeight: '700',
   },
 
-  // Standard Profile Card
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: '#eceff1',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3,
+  // Feed Content
+  feedContent: {
+    paddingBottom: 24,
+  },
+
+  // Profile Card
+  profileCard: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 18,
     overflow: 'hidden',
   },
-  imageContainer: {
-    width: '100%',
-    height: 270,
+  imageWrapper: {
     position: 'relative',
-    backgroundColor: '#e0e0e0',
+    height: 290,
+    width: '100%',
+    backgroundColor: '#eaeaea',
   },
   profileImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
   imageOverlayTop: {
     position: 'absolute',
@@ -429,27 +649,33 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  topBadgesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   verifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(46, 125, 50, 0.9)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
     gap: 4,
   },
   verifiedText: {
-    color: '#ffffff',
     fontSize: 11,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
-  heartButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+  heartSurface: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  heartBtn: {
+    margin: 0,
   },
   imageOverlayBottom: {
     position: 'absolute',
@@ -457,146 +683,157 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingHorizontal: 16,
-    paddingTop: 32,
-    paddingBottom: 14,
+    paddingTop: 36,
+    paddingBottom: 12,
   },
   nameRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   profileName: {
-    fontSize: 19,
-    fontWeight: 'bold',
     color: '#ffffff',
+    fontWeight: '800',
     flex: 1,
-  },
-  heightBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-    marginLeft: 8,
-  },
-  heightText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '600',
+    marginRight: 8,
+    textShadowColor: 'rgba(0,0,0,0.6)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   englishSubName: {
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#e4e4e4',
     fontSize: 12,
     marginTop: 2,
   },
-
-  // Card Body
-  cardBody: {
-    padding: 16,
+  // Card Content Details
+  cardContent: {
+    display: 'none',
+    paddingTop: 12,
+    paddingBottom: 8,
+    gap: 7,
+  },
+  simpleCardContent: {
+    paddingTop: 14,
+    paddingBottom: 10,
+    gap: 12,
+  },
+  simpleInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  simpleInfoItem: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    minWidth: 0,
+  },
+  simpleInfoText: {
+    flex: 1,
+    marginLeft: 8,
+    minWidth: 0,
+  },
+  simpleInfoLabel: {
+    color: '#777777',
+    fontSize: 11,
+    marginBottom: 2,
+  },
+  simpleInfoValue: {
+    fontSize: 13,
+    fontWeight: '700',
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
-  detailIcon: {
-    marginRight: 10,
-    width: 20,
+  detailIconWrapper: {
+    width: 24,
+    alignItems: 'center',
+    marginRight: 8,
   },
   detailText: {
-    fontSize: 13,
-    color: '#333333',
     flex: 1,
-    lineHeight: 18,
+    fontSize: 13,
   },
-  bioSnippet: {
-    fontSize: 12,
-    color: '#666666',
+  detailHighlight: {
+    fontWeight: '700',
+  },
+  bioSurface: {
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 3,
+  },
+  bioText: {
     fontStyle: 'italic',
     lineHeight: 18,
-    marginTop: 6,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#f5f5f5',
   },
 
-  // Actions
+  // Card Actions
   cardActions: {
     flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'stretch',
     paddingHorizontal: 16,
-    paddingBottom: 16,
-    gap: 12,
+    paddingBottom: 14,
+    paddingTop: 6,
+    gap: 10,
   },
   viewProfileBtn: {
+    borderRadius: 10,
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 11,
+  },
+  chatBtn: {
     borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: primaryColor,
-    backgroundColor: '#ffffff',
-    gap: 6,
+    flex: 1,
   },
-  viewProfileBtnText: {
-    color: primaryColor,
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  interestBtn: {
-    flex: 1.2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 11,
-    borderRadius: 10,
-    gap: 6,
-  },
-  interestBtnDefault: {
-    backgroundColor: primaryColor,
-  },
-  interestBtnSent: {
-    backgroundColor: accentGreen,
-  },
-  interestBtnText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: 'bold',
+  btnContent: {
+    height: 40,
   },
 
   // Empty State
-  emptyContainer: {
+  emptyCard: {
+    borderRadius: 16,
+    padding: 32,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 20,
+    marginHorizontal: 16,
+    marginTop: 20,
   },
   emptyTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333333',
-    marginTop: 12,
+    fontWeight: '700',
+    marginTop: 16,
   },
   emptySubtitle: {
-    fontSize: 13,
-    color: '#777777',
+    textAlign: 'center',
+    marginTop: 6,
+    marginBottom: 20,
+  },
+  resetBtn: {
+    borderRadius: 10,
+    paddingHorizontal: 8,
+  },
+
+  // Trust Footer
+  footerContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 20,
+  },
+  trustFooterSurface: {
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  trustFooterTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    marginTop: 8,
+  },
+  trustFooterSubtitle: {
+    fontSize: 11,
     textAlign: 'center',
     marginTop: 4,
-    marginBottom: 16,
-  },
-  resetFilterBtn: {
-    backgroundColor: primaryLight,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: primaryColor,
-  },
-  resetFilterText: {
-    color: primaryColor,
-    fontSize: 13,
-    fontWeight: 'bold',
+    lineHeight: 16,
   },
 });
-
-export default HomeScreen;

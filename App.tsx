@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { PaperProvider } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { theme, primaryColor } from './src/theme/theme';
 import { AuthProvider } from './src/context/AuthContext';
@@ -23,7 +24,12 @@ export default function App() {
       <LanguageProvider>
         <AuthProvider>
           <InterestsProvider>
-            <PaperProvider theme={theme}>
+            <PaperProvider
+              theme={theme}
+              settings={{
+                icon: props => <MaterialCommunityIcons {...props} />,
+              }}
+            >
               <NavigationContainer theme={navTheme}>
                 <AppNavigator />
               </NavigationContainer>

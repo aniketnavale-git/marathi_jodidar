@@ -177,8 +177,29 @@ const translations: Record<Language, Record<string, string>> = {
     // Tabs
     tabHome: 'होम',
     tabSearch: 'शोधा',
+    tabMatches: 'मॅचेस',
+    tabChat: 'चॅट',
+    tabNotifications: 'सूचना',
     tabInterests: 'इंटरेस्टस्',
     tabProfile: 'माझे प्रोफाइल',
+
+    // Chat / Messages
+    chatTitle: 'चॅट व मेसेज',
+    chatSubtitle: 'तुमचे संभाषण आणि संदेश',
+    noChatsTitle: 'अद्याप कोणतेही चॅट नाही',
+    noChatsSubtitle: 'प्रोफाइलवर रस दाखवून किंवा संभाषण सुरू करून चॅट करा.',
+    startChat: 'चॅट सुरू करा',
+    typeMessage: 'मेसेज टाईप करा...',
+    onlineNow: 'ऑनलाइन',
+    yesterday: 'काल',
+
+    // Notifications
+    notificationsTitle: 'सूचना (Notifications)',
+    notificationsSubtitle: 'नवीन ॲक्टिव्हिटी आणि अपडेट्स',
+    noNotificationsTitle: 'कोणतीही सूचना नाही',
+    noNotificationsSubtitle: 'नवीन रिक्वेस्ट किंवा मेसेज आल्यावर येथे सूचना दिसेल.',
+    markAllAsRead: 'सर्व वाचले म्हणून नोंदवा',
+    clearAll: 'सर्व साफ करा',
 
     // Home & Feed
     availableProfiles: 'उपलब्ध प्रोफाइल्स',
@@ -376,8 +397,29 @@ const translations: Record<Language, Record<string, string>> = {
     // Tabs
     tabHome: 'Home',
     tabSearch: 'Search',
+    tabMatches: 'Matches',
+    tabChat: 'Chat',
+    tabNotifications: 'Alerts',
     tabInterests: 'Interests',
-    tabProfile: 'My Profile',
+    tabProfile: 'Profile',
+
+    // Chat / Messages
+    chatTitle: 'Chat & Messages',
+    chatSubtitle: 'Your conversations and messages',
+    noChatsTitle: 'No chats yet',
+    noChatsSubtitle: 'Express interest in profiles to start chatting.',
+    startChat: 'Start Chat',
+    typeMessage: 'Type a message...',
+    onlineNow: 'Online',
+    yesterday: 'Yesterday',
+
+    // Notifications
+    notificationsTitle: 'Notifications',
+    notificationsSubtitle: 'Recent activity and alerts',
+    noNotificationsTitle: 'No notifications',
+    noNotificationsSubtitle: 'You will see alerts here when members view or like your profile.',
+    markAllAsRead: 'Mark all as read',
+    clearAll: 'Clear all',
 
     // Home & Feed
     availableProfiles: 'Available Profiles',

@@ -3,6 +3,7 @@ import { View, StyleSheet, ScrollView, Image, TouchableOpacity, Alert, StatusBar
 import { Text, Divider } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { primaryColor } from '../theme/theme';
@@ -50,6 +51,21 @@ export const ProfileScreen = ({ navigation }: any) => {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Profile Header Card */}
         <View style={styles.profileCard}>
+          <LinearGradient
+            colors={[primaryColor, '#b83278']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.profileBanner}
+          >
+            <View>
+              <Text style={styles.profileBannerEyebrow}>{language === 'mr' ? 'माझे खाते' : 'MY ACCOUNT'}</Text>
+              <Text style={styles.profileBannerTitle}>{language === 'mr' ? 'माझे प्रोफाइल' : 'My Profile'}</Text>
+            </View>
+            <View style={styles.bannerAction}>
+              <MaterialCommunityIcons name="pencil-outline" size={19} color={primaryColor} />
+            </View>
+          </LinearGradient>
+
           <View style={styles.avatarContainer}>
             <Image
               source={{ uri: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&q=80' }}
@@ -58,6 +74,11 @@ export const ProfileScreen = ({ navigation }: any) => {
             <View style={styles.verifiedBadge}>
               <MaterialCommunityIcons name="check" size={14} color="#ffffff" />
             </View>
+          </View>
+
+          <View style={styles.profileStatusPill}>
+            <View style={styles.onlineDot} />
+            <Text style={styles.profileStatusText}>{language === 'mr' ? 'प्रोफाइल सक्रिय आहे' : 'Profile is active'}</Text>
           </View>
 
           <Text style={styles.userName}>अनिकेत नवले</Text>
@@ -80,6 +101,27 @@ export const ProfileScreen = ({ navigation }: any) => {
               <Text style={styles.statNumber}>5</Text>
               <Text style={styles.statLabel}>{t('matchesStat')}</Text>
             </View>
+          </View>
+        </View>
+
+        {/* Profile completion prompt */}
+        <View style={styles.completionCard}>
+          <View style={styles.completionTopRow}>
+            <View style={styles.completionIcon}>
+              <MaterialCommunityIcons name="shield-check-outline" size={22} color={primaryColor} />
+            </View>
+            <View style={styles.completionCopy}>
+              <Text style={styles.completionTitle}>{language === 'mr' ? 'प्रोफाइल पूर्ण करा' : 'Complete your profile'}</Text>
+              <Text style={styles.completionSubtitle}>{language === 'mr' ? 'अधिक चांगल्या जुळण्या मिळवा' : 'Get better matches and more responses'}</Text>
+            </View>
+            <Text style={styles.completionPercent}>80%</Text>
+          </View>
+          <View style={styles.progressTrack}>
+            <View style={styles.progressFill} />
+          </View>
+          <View style={styles.completionLink}>
+            <Text style={styles.completionLinkText}>{language === 'mr' ? 'उर्वरित माहिती भरा' : 'Finish remaining details'}</Text>
+            <MaterialCommunityIcons name="arrow-right" size={17} color={primaryColor} />
           </View>
         </View>
 
@@ -133,9 +175,40 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
+  profileBanner: {
+    width: '100%',
+    minHeight: 104,
+    marginTop: -24,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  profileBannerEyebrow: {
+    color: 'rgba(255,255,255,0.72)',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+  },
+  profileBannerTitle: {
+    color: '#ffffff',
+    fontSize: 23,
+    fontWeight: '800',
+    marginTop: 5,
+  },
+  bannerAction: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   avatarContainer: {
     position: 'relative',
-    marginBottom: 12,
+    marginTop: -42,
+    marginBottom: 10,
   },
   avatar: {
     width: 90,
@@ -172,6 +245,27 @@ const styles = StyleSheet.create({
     color: '#555555',
     marginTop: 4,
   },
+  profileStatusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#edf8ef',
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginBottom: 6,
+  },
+  onlineDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#2e7d32',
+    marginRight: 6,
+  },
+  profileStatusText: {
+    color: '#2e7d32',
+    fontSize: 11,
+    fontWeight: '700',
+  },
   statsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -200,6 +294,75 @@ const styles = StyleSheet.create({
     width: 1,
     height: 26,
     backgroundColor: '#eeeeee',
+  },
+  completionCard: {
+    backgroundColor: '#ffffff',
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#f0d8e5',
+    shadowColor: '#42152f',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 7,
+    elevation: 2,
+  },
+  completionTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  completionIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: '#fdf2f7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 11,
+  },
+  completionCopy: {
+    flex: 1,
+  },
+  completionTitle: {
+    color: '#222222',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  completionSubtitle: {
+    color: '#777777',
+    fontSize: 11,
+    marginTop: 3,
+  },
+  completionPercent: {
+    color: primaryColor,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  progressTrack: {
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#f3e4eb',
+    marginTop: 14,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    width: '80%',
+    height: '100%',
+    borderRadius: 4,
+    backgroundColor: primaryColor,
+  },
+  completionLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  completionLinkText: {
+    color: primaryColor,
+    fontSize: 12,
+    fontWeight: '800',
   },
   menuSection: {
     backgroundColor: '#ffffff',
