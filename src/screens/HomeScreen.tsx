@@ -38,6 +38,25 @@ export const HomeScreen = ({ navigation }: any) => {
 
   const { favorites, toggleFavorite } = useInterests();
   const [refreshing, setRefreshing] = useState(false);
+  const offerEndsAt = useRef(Date.now() + 24 * 60 * 60 * 1000).current;
+  const [offerSecondsLeft, setOfferSecondsLeft] = useState(() => Math.max(0, Math.floor((offerEndsAt - Date.now()) / 1000)));
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      setOfferSecondsLeft(Math.max(0, Math.floor((offerEndsAt - Date.now()) / 1000)));
+    };
+
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+    return () => clearInterval(timer);
+  }, [offerEndsAt]);
+
+  const formatOfferCountdown = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+    const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+    const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  };
 
   // Smart 16:9 Demo Image Banners Data
   const banners = useMemo(() => [
@@ -297,6 +316,32 @@ export const HomeScreen = ({ navigation }: any) => {
   const renderListHeader = () => {
     return (
       <View style={styles.feedHeaderContainer}>
+        {offerSecondsLeft > 0 && (
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => navigation.navigate('Plan')}
+            accessibilityLabel={isMr ? 'स्वागत ऑफर उघडा' : 'Open welcome offer'}
+          >
+            <LinearGradient
+              colors={['#9c1c5b', '#e91e63']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.offerBanner}
+            >
+              <View style={styles.offerCopy}>
+                <Text style={styles.offerEyebrow}>{isMr ? 'स्वागत ऑफर' : 'WELCOME OFFER'}</Text>
+                <Text style={styles.offerTitle}>{isMr ? 'प्रीमियम प्लॅनवर खास सवलत' : 'Special savings on Premium'}</Text>
+                <Text style={styles.offerSubtitle}>{isMr ? 'ऑफर संपण्यापूर्वी आत्ताच घ्या' : 'Claim it before the offer ends'}</Text>
+              </View>
+              <View style={styles.offerTimer}>
+                <MaterialCommunityIcons name="clock-fast" size={18} color="#ffffff" />
+                <Text style={styles.offerTimerText}>{formatOfferCountdown(offerSecondsLeft)}</Text>
+                <Text style={styles.offerTimerLabel}>{isMr ? 'उरलेला वेळ' : 'LEFT'}</Text>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
+
         {/* Smart 16:9 Image Banner Carousel with Padding on Both Sides */}
         <View style={styles.carouselContainer}>
           <FlatList
@@ -443,6 +488,12 @@ export const HomeScreen = ({ navigation }: any) => {
         />
 
         <Appbar.Action
+          icon="magnify"
+          color={theme.colors.onPrimary}
+          accessibilityLabel={t('appBarSearch')}
+          onPress={() => navigation.getParent()?.navigate('Search')}
+        />
+        <Appbar.Action
           icon="bell-badge-outline"
           color={theme.colors.onPrimary}
           onPress={() => navigation.navigate('Notifications')}
@@ -508,7 +559,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     letterSpacing: 0.3,
-    paddingLeft: 8,
   },
 
   // Feed Header Container
@@ -517,6 +567,59 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
 
+
+  offerBanner: {
+    minHeight: 104,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  offerCopy: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  offerEyebrow: {
+    color: '#ffd5e7',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  offerTitle: {
+    color: '#ffffff',
+    fontSize: 17,
+    fontWeight: '800',
+    marginTop: 4,
+  },
+  offerSubtitle: {
+    color: '#ffe8f1',
+    fontSize: 11,
+    marginTop: 4,
+  },
+  offerTimer: {
+    minWidth: 76,
+    alignItems: 'center',
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+  },
+  offerTimerText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '800',
+    marginTop: 2,
+  },
+  offerTimerLabel: {
+    color: '#ffe8f1',
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    marginTop: 2,
+  },
 
   // Smart 16:9 Image Banner Carousel
   carouselContainer: {

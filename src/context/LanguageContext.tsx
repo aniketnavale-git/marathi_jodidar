@@ -179,9 +179,12 @@ const translations: Record<Language, Record<string, string>> = {
     tabSearch: 'शोधा',
     tabMatches: 'मॅचेस',
     tabChat: 'चॅट',
+    tabPlan: 'प्लॅन',
     tabNotifications: 'सूचना',
     tabInterests: 'इंटरेस्टस्',
     tabProfile: 'माझे प्रोफाइल',
+    appBarSearch: 'शोधा',
+    appBarLanguage: 'भाषा बदला',
 
     // Chat / Messages
     chatTitle: 'चॅट व मेसेज',
@@ -399,9 +402,12 @@ const translations: Record<Language, Record<string, string>> = {
     tabSearch: 'Search',
     tabMatches: 'Matches',
     tabChat: 'Chat',
+    tabPlan: 'Plan',
     tabNotifications: 'Alerts',
     tabInterests: 'Interests',
     tabProfile: 'Profile',
+    appBarSearch: 'Search',
+    appBarLanguage: 'Change language',
 
     // Chat / Messages
     chatTitle: 'Chat & Messages',

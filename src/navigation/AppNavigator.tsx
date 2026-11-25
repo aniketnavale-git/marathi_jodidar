@@ -12,6 +12,7 @@ import { CasteSelectionScreen } from '../screens/CasteSelectionScreen';
 import { SplashScreen } from '../screens/SplashScreen';
 import { LanguageSelectionScreen } from '../screens/LanguageSelectionScreen';
 import { NotificationsScreen } from '../screens/NotificationsScreen';
+import { SearchScreen } from '../screens/SearchScreen';
 import { useTheme } from 'react-native-paper';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -74,6 +75,11 @@ export const AppNavigator = () => {
           <Stack.Screen 
             name="Main" 
             component={MainTabNavigator} 
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Search"
+            component={SearchScreen}
             options={{ headerShown: false }}
           />
           <Stack.Screen 
